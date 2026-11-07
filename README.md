@@ -8,7 +8,7 @@
 <br/><br/>
 
 [![Build](https://github.com/JonneNieminen/Lumio/actions/workflows/build.yml/badge.svg)](https://github.com/JonneNieminen/Lumio/actions/workflows/build.yml)
-[![Release](https://img.shields.io/github/v/release/JonneNieminen/Lumio?filter=v*&label=release&color=E08E00)](https://github.com/JonneNieminen/Lumio/releases/latest)
+[![Version](https://img.shields.io/badge/dynamic/xml?url=https%3A%2F%2Fraw.githubusercontent.com%2FJonneNieminen%2FLumio%2Fmain%2FDirectory.Build.props&query=%2F%2FVersion&label=version&color=E08E00)](https://github.com/JonneNieminen/Lumio/releases)
 [![License: MIT](https://img.shields.io/github/license/JonneNieminen/Lumio?color=E08E00)](LICENSE)
 ![Platforms](https://img.shields.io/badge/platforms-macOS%20·%20Windows%20·%20Linux%20·%20Android-232850)
 <br/>
