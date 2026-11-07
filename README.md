@@ -13,8 +13,12 @@ dotnet run --project src/Lumio.Desktop
 ```
 
 ```bash
-dotnet test tests/Lumio.Tests
+dotnet test --project tests/Lumio.Tests
 ```
+
+Tests use xunit v4 on Microsoft.Testing.Platform (opted in via `global.json`). UI tests drive
+Avalonia's headless platform directly (`Avalonia.Headless`), so they don't depend on an
+xunit-version-specific adapter.
 
 Android needs the workload and a JDK 17+ (plus the Android SDK, already at `~/Library/Android/sdk`):
 
@@ -35,7 +39,7 @@ dotnet build src/Lumio.Android -t:Run
 | `src/Lumio` | App shell, pages and view models (CommunityToolkit.Mvvm, compiled bindings, MS DI). |
 | `src/Lumio.Desktop` | Desktop head. Picks Keychain, Credential Manager or Secret Service. DevTools in Debug. |
 | `src/Lumio.Android` | Android head with an Android Keystore secret store. |
-| `tests/Lumio.Tests` | xUnit v3 tests for Core, view models and headless UI (theme tokens, stepper). |
+| `tests/Lumio.Tests` | xunit v4 tests for Core, view models and headless UI (theme tokens, stepper). |
 
 Navigation uses Avalonia's `DrawerPage` + `NavigationPage`, driven view-model-first by
 `NavigationService` (explicit view mapping, trimming safe). The drawer is an inline sidebar on
@@ -65,6 +69,20 @@ The GitHub release is the update feed: each desktop channel (`win-x64`, `osx-arm
 `releases.<channel>.json`. In-app updating (an `IAppUpdateService` over Velopack's `GithubSource`)
 is the next step. `VelopackApp.Build().Run()` is already the first line of `Main`. Builds are
 unsigned for now; `release.yml` marks where Windows, macOS and Android signing go.
+
+### macOS icon
+
+macOS 26+ draws legacy `.icns` icons on a grey plate. The macOS icon is therefore an Icon
+Composer document, `assets/icons/Lumio.icon`, which `build/macos/make-app.sh` compiles into the
+bundle's `Assets.car` with Xcode's `actool`. `lumio-icon.icns` remains as the macOS 11-15 fallback.
+Regenerate both from the brand geometry with `python3 tools/generate_macos_icon.py`. Each Build
+uploads an `icon-preview-osx-*` artifact showing the icon as macOS renders it.
+
+To build the bundle locally with the new icon, Xcode needs its first-launch setup once:
+
+```bash
+sudo xcodebuild -runFirstLaunch
+```
 
 macOS DMGs come from `build/macos/make-dmg.sh`: Lumio.app, an Applications shortcut and
 `READ ME FIRST.txt` with the command that lets an unnotarized build open:

@@ -4,8 +4,15 @@ using Lumio.Core.Model;
 using Lumio.Core.Secrets;
 using Lumio.Core.Services;
 using Lumio.Core.Storage;
+using static Lumio.Tests.TestToken;
 
 namespace Lumio.Tests;
+
+file static class TestToken
+{
+    /// <summary>Cancelled when xUnit cancels the test run, so async calls stop promptly.</summary>
+    public static CancellationToken Ct => TestContext.Current.CancellationToken;
+}
 
 public class UrlUtilTests
 {
@@ -44,7 +51,7 @@ public class HttpConnectionTesterTests
     public async Task Healthy_on_2xx()
     {
         var tester = new HttpConnectionTester(new HttpClient(StubHandler.Status(HttpStatusCode.OK)));
-        var result = await tester.TestAsync(Draft());
+        var result = await tester.TestAsync(Draft(), Ct);
         Assert.Equal(CheckOutcome.Healthy, result.Outcome);
         Assert.Equal(200, result.HttpStatus);
         Assert.Null(result.Advice);
@@ -76,7 +83,7 @@ public class HttpConnectionTesterTests
     {
         var handler = StubHandler.Status(HttpStatusCode.OK);
         var tester = new HttpConnectionTester(new HttpClient(handler));
-        var result = await tester.TestAsync(Draft() with { BaseUrl = "not a url" });
+        var result = await tester.TestAsync(Draft() with { BaseUrl = "not a url" }, Ct);
         Assert.Equal(CheckOutcome.Failed, result.Outcome);
         Assert.Null(handler.LastRequest);
     }
@@ -85,7 +92,7 @@ public class HttpConnectionTesterTests
     public async Task Network_failure_says_what_to_do()
     {
         var handler = new StubHandler(_ => throw new HttpRequestException(HttpRequestError.NameResolutionError));
-        var result = await new HttpConnectionTester(new HttpClient(handler)).TestAsync(Draft());
+        var result = await new HttpConnectionTester(new HttpClient(handler)).TestAsync(Draft(), Ct);
         Assert.Equal(CheckOutcome.Failed, result.Outcome);
         Assert.Contains("api.example.com", result.Summary);
         Assert.Contains("typos", result.Advice);
@@ -130,9 +137,9 @@ public class ConnectionServiceTests
         var secrets = new InMemorySecretStore();
         var svc = new ConnectionService(repo, secrets, new FakeTester());
 
-        var created = await svc.CreateAsync(Draft("ghp_secret"), null);
+        var created = await svc.CreateAsync(Draft("ghp_secret"), null, Ct);
 
-        Assert.Equal("ghp_secret", await secrets.GetAsync(created.SecretKey));
+        Assert.Equal("ghp_secret", await secrets.GetAsync(created.SecretKey, Ct));
         Assert.Equal("My GitHub", created.Name);
         Assert.Equal("https://api.github.com", created.BaseUrl);
         Assert.Single(repo.Saved);
@@ -144,13 +151,13 @@ public class ConnectionServiceTests
     {
         var tester = new FakeTester();
         var svc = new ConnectionService(new MemoryRepository(), new InMemorySecretStore(), tester);
-        var created = await svc.CreateAsync(Draft("from-store"), null);
+        var created = await svc.CreateAsync(Draft("from-store"), null, Ct);
 
-        await svc.TestAsync(created.Id);
-        await svc.TestAsync(created.Id);
+        await svc.TestAsync(created.Id, Ct);
+        await svc.TestAsync(created.Id, Ct);
 
         Assert.All(tester.Calls, c => Assert.Equal("from-store", c.Secret));
-        var reloaded = await svc.GetAsync(created.Id);
+        var reloaded = await svc.GetAsync(created.Id, Ct);
         Assert.Equal(2, reloaded!.History.Count);
         Assert.Equal(ConnectionStatus.Connected, reloaded.Status);
     }
@@ -161,10 +168,10 @@ public class ConnectionServiceTests
         var secrets = new InMemorySecretStore();
         var tester = new FakeTester();
         var svc = new ConnectionService(new MemoryRepository(), secrets, tester);
-        var created = await svc.CreateAsync(Draft(), null);
-        await secrets.DeleteAsync(created.SecretKey);
+        var created = await svc.CreateAsync(Draft(), null, Ct);
+        await secrets.DeleteAsync(created.SecretKey, Ct);
 
-        var result = await svc.TestAsync(created.Id);
+        var result = await svc.TestAsync(created.Id, Ct);
 
         Assert.Equal(CheckOutcome.Failed, result.Outcome);
         Assert.Empty(tester.Calls);
@@ -176,11 +183,11 @@ public class ConnectionServiceTests
         var repo = new MemoryRepository();
         var secrets = new InMemorySecretStore();
         var svc = new ConnectionService(repo, secrets, new FakeTester());
-        var created = await svc.CreateAsync(Draft(), null);
+        var created = await svc.CreateAsync(Draft(), null, Ct);
 
-        await svc.DeleteAsync(created.Id);
+        await svc.DeleteAsync(created.Id, Ct);
 
-        Assert.Null(await secrets.GetAsync(created.SecretKey));
+        Assert.Null(await secrets.GetAsync(created.SecretKey, Ct));
         Assert.Empty(repo.Saved);
     }
 
@@ -212,14 +219,14 @@ public class JsonConnectionRepositoryTests
                 AuthKind = AuthKind.Bearer, CreatedAt = DateTimeOffset.UnixEpoch,
             }.WithCheck(new CheckResult(DateTimeOffset.UnixEpoch, CheckOutcome.Degraded, 429, 10, "Rate limited", "Wait"));
 
-            await repo.SaveAllAsync([c]);
-            var loaded = await new JsonConnectionRepository(path).LoadAllAsync();
+            await repo.SaveAllAsync([c], Ct);
+            var loaded = await new JsonConnectionRepository(path).LoadAllAsync(Ct);
 
             var back = Assert.Single(loaded);
             Assert.Equal(c.Id, back.Id);
             Assert.Equal(ConnectionStatus.NeedsAttention, back.Status);
             Assert.False(File.Exists(path + ".tmp"));
-            Assert.Contains("\"authKind\": \"Bearer\"", await File.ReadAllTextAsync(path));
+            Assert.Contains("\"authKind\": \"Bearer\"", await File.ReadAllTextAsync(path, Ct));
         }
         finally
         {
@@ -231,6 +238,6 @@ public class JsonConnectionRepositoryTests
     public async Task Missing_file_is_empty()
     {
         var repo = new JsonConnectionRepository(Path.Combine(Path.GetTempPath(), $"none-{Guid.NewGuid():N}.json"));
-        Assert.Empty(await repo.LoadAllAsync());
+        Assert.Empty(await repo.LoadAllAsync(Ct));
     }
 }

@@ -28,7 +28,7 @@ updates:
       android:
         patterns: ["Xamarin.*"]
       testing:
-        patterns: ["xunit*", "Microsoft.NET.Test.Sdk"]
+        patterns: ["xunit*"]
 
   - package-ecosystem: dotnet-sdk
     directory: "/"

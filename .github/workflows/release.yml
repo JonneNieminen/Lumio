@@ -41,7 +41,7 @@ env:
 jobs:
   prepare:
     name: Prepare version
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     outputs:
       version: ${{ steps.version.outputs.version }}
       tag: ${{ steps.version.outputs.tag }}
@@ -94,13 +94,13 @@ jobs:
 
   test:
     name: Test
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-dotnet@v6
         with:
           global-json-file: global.json
-      - run: dotnet test tests/Lumio.Tests -c Release
+      - run: dotnet test --project tests/Lumio.Tests -c Release
 
   desktop:
     name: Pack ${{ matrix.channel }}
@@ -109,12 +109,12 @@ jobs:
       fail-fast: true
       matrix:
         include:
-          - { os: windows-latest,   rid: win-x64,     channel: win-x64,     exe: Lumio.Desktop.exe, icon: assets/icons/lumio-icon.ico }
-          - { os: windows-latest,   rid: win-arm64,   channel: win-arm64,   exe: Lumio.Desktop.exe, icon: assets/icons/lumio-icon.ico }
-          - { os: macos-latest,     rid: osx-arm64,   channel: osx-arm64,   exe: Lumio.Desktop,     icon: assets/icons/lumio-icon.icns }
-          - { os: macos-latest,     rid: osx-x64,     channel: osx-x64,     exe: Lumio.Desktop,     icon: assets/icons/lumio-icon.icns }
-          - { os: ubuntu-latest,    rid: linux-x64,   channel: linux-x64,   exe: Lumio.Desktop,     icon: assets/icons/lumio-icon-512.png }
-          - { os: ubuntu-24.04-arm, rid: linux-arm64, channel: linux-arm64, exe: Lumio.Desktop,     icon: assets/icons/lumio-icon-512.png }
+          - { os: windows-2025-vs2026, rid: win-x64,     channel: win-x64,     exe: Lumio.Desktop.exe, icon: assets/icons/lumio-icon.ico }
+          - { os: windows-11-arm,      rid: win-arm64,   channel: win-arm64,   exe: Lumio.Desktop.exe, icon: assets/icons/lumio-icon.ico }
+          - { os: macos-26,            rid: osx-arm64,   channel: osx-arm64,   exe: Lumio.Desktop,     icon: "" }
+          - { os: macos-26-intel,      rid: osx-x64,     channel: osx-x64,     exe: Lumio.Desktop,     icon: "" }
+          - { os: ubuntu-26.04,        rid: linux-x64,   channel: linux-x64,   exe: Lumio.Desktop,     icon: assets/icons/lumio-icon-512.png }
+          - { os: ubuntu-26.04-arm,    rid: linux-arm64, channel: linux-arm64, exe: Lumio.Desktop,     icon: assets/icons/lumio-icon-512.png }
     runs-on: ${{ matrix.os }}
     env:
       VERSION: ${{ needs.prepare.outputs.version }}
@@ -146,6 +146,11 @@ jobs:
           -p:Version=$VERSION
           -o publish/${{ matrix.rid }}
 
+      # macOS: Lumio.app with the Icon Composer icon compiled into Assets.car; vpk packs it as-is.
+      - name: Assemble Lumio.app
+        if: runner.os == 'macOS'
+        run: build/macos/make-app.sh "publish/${{ matrix.rid }}" "$VERSION" app
+
       # ---------------------------------------------------------------------------------------
       # SIGNING PLACEHOLDERS (unsigned until the secrets exist)
       # Windows: add `--signTemplate "..."` (e.g. AzureSignTool) or `--azureTrustedSignFile`
@@ -159,14 +164,18 @@ jobs:
       - name: Pack (Velopack)
         shell: bash
         run: |
+          # macOS packs the assembled bundle (its icon lives in the bundle); others pack the
+          # publish folder and take the icon from the matrix.
+          pack_dir="publish/${{ matrix.rid }}"; icon=()
+          if [[ "$RUNNER_OS" == "macOS" ]]; then pack_dir="app/Lumio.app"; else icon=(--icon "${{ matrix.icon }}"); fi
           dotnet vpk pack \
             --packId "$PACK_ID" \
             --packVersion "$VERSION" \
             --packTitle "$PACK_TITLE" \
             --packAuthors "$PACK_AUTHORS" \
-            --packDir "publish/${{ matrix.rid }}" \
+            --packDir "$pack_dir" \
             --mainExe "${{ matrix.exe }}" \
-            --icon "${{ matrix.icon }}" \
+            ${icon[@]+"${icon[@]}"} \
             --runtime "${{ matrix.rid }}" \
             --channel "${{ matrix.channel }}" \
             --outputDir releases
@@ -196,7 +205,7 @@ jobs:
   android:
     name: Build Android APK
     needs: [prepare, test]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     env:
       VERSION: ${{ needs.prepare.outputs.version }}
     steps:
@@ -245,7 +254,7 @@ jobs:
   publish:
     name: Publish GitHub release
     needs: [prepare, desktop, android]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     env:
       VERSION: ${{ needs.prepare.outputs.version }}
       TAG: ${{ needs.prepare.outputs.tag }}

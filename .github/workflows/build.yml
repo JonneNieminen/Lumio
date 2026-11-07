@@ -28,7 +28,7 @@ env:
 jobs:
   test:
     name: Test
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@v7
 
@@ -37,7 +37,7 @@ jobs:
           global-json-file: global.json
 
       - name: Test
-        run: dotnet test tests/Lumio.Tests -c Release --logger "trx;LogFileName=results.trx" --results-directory test-results
+        run: dotnet test --project tests/Lumio.Tests -c Release --results-directory test-results --report-xunit-trx --report-xunit-trx-filename results.trx
 
       - name: Upload test results
         if: always()
@@ -54,12 +54,12 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { os: windows-latest,   rid: win-x64 }
-          - { os: windows-latest,   rid: win-arm64 }
-          - { os: macos-latest,     rid: osx-arm64, mac: true }
-          - { os: macos-latest,     rid: osx-x64,   mac: true }
-          - { os: ubuntu-latest,    rid: linux-x64 }
-          - { os: ubuntu-24.04-arm, rid: linux-arm64 }
+          - { os: windows-2025-vs2026, rid: win-x64 }
+          - { os: windows-11-arm,      rid: win-arm64 }
+          - { os: macos-26,            rid: osx-arm64, mac: true }
+          - { os: macos-26-intel,      rid: osx-x64,   mac: true }
+          - { os: ubuntu-26.04,        rid: linux-x64 }
+          - { os: ubuntu-26.04-arm,    rid: linux-arm64 }
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v7
@@ -84,15 +84,31 @@ jobs:
           retention-days: 14
 
       # macOS: build the same DMG the Release workflow ships, so it's testable from any PR.
-      - name: Pack .app (Velopack)
+      # Lumio.app with the Icon Composer icon compiled into Assets.car (no grey plate on macOS 26+).
+      - name: Assemble Lumio.app
+        if: matrix.mac
+        run: build/macos/make-app.sh publish/${{ matrix.rid }} "$CI_VERSION" app
+
+      - name: Pack (Velopack)
         if: matrix.mac
         shell: bash
         run: |
           dotnet tool restore
           dotnet vpk pack --packId Lumio.Desktop --packVersion "$CI_VERSION" --packTitle Lumio \
-            --packDir publish/${{ matrix.rid }} --mainExe Lumio.Desktop \
-            --icon assets/icons/lumio-icon.icns --runtime ${{ matrix.rid }} \
+            --packDir app/Lumio.app --mainExe Lumio.Desktop --runtime ${{ matrix.rid }} \
             --channel ${{ matrix.rid }} --outputDir releases
+
+      - name: Render icon preview
+        if: matrix.mac
+        run: swift build/macos/render-icon.swift app/Lumio.app icon-preview-${{ matrix.rid }}.png
+
+      - name: Upload icon preview
+        if: matrix.mac
+        uses: actions/upload-artifact@v7
+        with:
+          name: icon-preview-${{ matrix.rid }}
+          path: icon-preview-${{ matrix.rid }}.png
+          retention-days: 14
 
       - name: Make DMG
         if: matrix.mac
@@ -110,7 +126,7 @@ jobs:
   android:
     name: Android
     needs: test
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@v7
 
@@ -150,7 +166,7 @@ jobs:
     name: Build result
     if: always()
     needs: [test, desktop, android]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
       - name: All builds succeeded
         env:
