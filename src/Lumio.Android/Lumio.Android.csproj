@@ -12,11 +12,6 @@
     <AndroidEnableProfiledAot>false</AndroidEnableProfiledAot>
   </PropertyGroup>
   <ItemGroup>
-    <AndroidResource Include="..\..\assets\icons\lumio-icon-512.png">
-      <Link>Resources\drawable\icon.png</Link>
-    </AndroidResource>
-  </ItemGroup>
-  <ItemGroup>
     <PackageReference Include="Avalonia.Android" />
     <PackageReference Include="Xamarin.AndroidX.Core.SplashScreen" />
   </ItemGroup>

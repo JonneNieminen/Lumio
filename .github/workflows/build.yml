@@ -23,7 +23,7 @@ env:
   DOTNET_NOLOGO: true
   DOTNET_CLI_TELEMETRY_OPTOUT: true
   # CI builds get a pre-release version so they never look like a real release.
-  CI_VERSION: 0.0.0-ci.${{ github.run_number }}
+  CI_VERSION: 0.0.1-ci.${{ github.run_number }}
 
 jobs:
   test:
