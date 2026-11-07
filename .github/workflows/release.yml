@@ -1,0 +1,312 @@
+# Release: builds Velopack update packages for every desktop platform plus the Android APK,
+# and publishes them to GitHub Releases. That release is Lumio's update feed: installed desktop
+# apps will read releases.<channel>.json from it once in-app updating lands (IAppUpdateService).
+#
+# Run it from the Actions tab. The version is the latest vX.Y.Z tag bumped by the chosen
+# release type, unless an explicit version is given.
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      release-type:
+        description: "Release type (bumps the latest vX.Y.Z tag)"
+        type: choice
+        options: [patch, minor, major]
+        default: patch
+      version:
+        description: "Explicit version (optional, overrides release type), e.g. 1.2.0 or 1.3.0-beta.1"
+        type: string
+        required: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+  # Permanent Velopack app id. Never change it: installed apps find updates by it.
+  # Deliberately not "Lumio": on Windows the install folder is %LOCALAPPDATA%\<packId> and is
+  # deleted on uninstall, while Lumio keeps user data in %LOCALAPPDATA%\Lumio.
+  PACK_ID: Lumio.Desktop
+  PACK_TITLE: Lumio
+  PACK_AUTHORS: Lumio
+  PROJECT: src/Lumio.Desktop/Lumio.Desktop.csproj
+  REPO_URL: https://github.com/${{ github.repository }}
+
+jobs:
+  prepare:
+    name: Prepare version
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      tag: ${{ steps.version.outputs.tag }}
+      prerelease: ${{ steps.version.outputs.prerelease }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0 # tags
+
+      - name: Compute version
+        id: version
+        shell: bash
+        env:
+          RELEASE_TYPE: ${{ inputs.release-type }}
+          EXPLICIT: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          semver='^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-[0-9A-Za-z.-]+)?$'
+
+          if [[ -n "${EXPLICIT// }" ]]; then
+            version="${EXPLICIT#v}"
+            [[ "$version" =~ $semver ]] || { echo "::error::'$version' is not a three-part SemVer version (X.Y.Z or X.Y.Z-pre)."; exit 1; }
+          else
+            latest=$(git tag -l 'v*' --sort=-v:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -n1 || true)
+            latest="${latest:-v0.0.0}"
+            IFS=. read -r major minor patch <<< "${latest#v}"
+            case "$RELEASE_TYPE" in
+              major) version="$((major + 1)).0.0" ;;
+              minor) version="${major}.$((minor + 1)).0" ;;
+              patch) version="${major}.${minor}.$((patch + 1))" ;;
+            esac
+            echo "Latest release tag: $latest -> $RELEASE_TYPE -> $version"
+          fi
+
+          tag="v$version"
+          if git rev-parse -q --verify "refs/tags/$tag" >/dev/null; then
+            echo "::error::Tag $tag already exists. Pick another version or release type."
+            exit 1
+          fi
+
+          prerelease=false
+          [[ "$version" == *-* ]] && prerelease=true
+
+          {
+            echo "version=$version"
+            echo "tag=$tag"
+            echo "prerelease=$prerelease"
+          } >> "$GITHUB_OUTPUT"
+          echo "### Releasing Lumio $version ($tag)" >> "$GITHUB_STEP_SUMMARY"
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json
+      - run: dotnet test tests/Lumio.Tests -c Release
+
+  desktop:
+    name: Pack ${{ matrix.channel }}
+    needs: [prepare, test]
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - { os: windows-latest,   rid: win-x64,     channel: win-x64,     exe: Lumio.Desktop.exe, icon: assets/icons/lumio-icon.ico }
+          - { os: windows-latest,   rid: win-arm64,   channel: win-arm64,   exe: Lumio.Desktop.exe, icon: assets/icons/lumio-icon.ico }
+          - { os: macos-latest,     rid: osx-arm64,   channel: osx-arm64,   exe: Lumio.Desktop,     icon: assets/icons/lumio-icon.icns }
+          - { os: macos-latest,     rid: osx-x64,     channel: osx-x64,     exe: Lumio.Desktop,     icon: assets/icons/lumio-icon.icns }
+          - { os: ubuntu-latest,    rid: linux-x64,   channel: linux-x64,   exe: Lumio.Desktop,     icon: assets/icons/lumio-icon-512.png }
+          - { os: ubuntu-24.04-arm, rid: linux-arm64, channel: linux-arm64, exe: Lumio.Desktop,     icon: assets/icons/lumio-icon-512.png }
+    runs-on: ${{ matrix.os }}
+    env:
+      VERSION: ${{ needs.prepare.outputs.version }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json
+
+      - name: Restore vpk (pinned in .config/dotnet-tools.json)
+        run: dotnet tool restore
+
+      # Deltas need the previous full package of the same channel.
+      - name: Download previous release
+        shell: bash
+        env:
+          PRE: ${{ needs.prepare.outputs.prerelease == 'true' && '--pre' || '' }}
+        run: |
+          dotnet vpk download github --repoUrl "$REPO_URL" --channel "${{ matrix.channel }}" $PRE \
+            -o releases --token "${{ secrets.GHTOKENWORKFLOW }}" \
+            || echo "No previous ${{ matrix.channel }} release found; this is the first one (no deltas)."
+
+      - name: Publish (self-contained)
+        shell: bash
+        run: >
+          dotnet publish "$PROJECT"
+          -c Release -r ${{ matrix.rid }} --self-contained
+          -p:Version=$VERSION
+          -o publish/${{ matrix.rid }}
+
+      # ---------------------------------------------------------------------------------------
+      # SIGNING PLACEHOLDERS (unsigned until the secrets exist)
+      # Windows: add `--signTemplate "..."` (e.g. AzureSignTool) or `--azureTrustedSignFile`
+      #          to the pack step, using certificate secrets.
+      # macOS:   import the Developer ID Application + Installer certificates into a temporary
+      #          keychain, run `xcrun notarytool store-credentials lumio-notary ...`, then add
+      #          `--signAppIdentity`, `--signInstallIdentity`, `--notaryProfile lumio-notary`
+      #          and `--keychain` to the pack step. Unsigned macOS builds trigger Gatekeeper.
+      # ---------------------------------------------------------------------------------------
+
+      - name: Pack (Velopack)
+        shell: bash
+        run: |
+          dotnet vpk pack \
+            --packId "$PACK_ID" \
+            --packVersion "$VERSION" \
+            --packTitle "$PACK_TITLE" \
+            --packAuthors "$PACK_AUTHORS" \
+            --packDir "publish/${{ matrix.rid }}" \
+            --mainExe "${{ matrix.exe }}" \
+            --icon "${{ matrix.icon }}" \
+            --runtime "${{ matrix.rid }}" \
+            --channel "${{ matrix.channel }}" \
+            --outputDir releases
+
+      - name: Upload packages
+        uses: actions/upload-artifact@v7
+        with:
+          name: velopack-${{ matrix.channel }}
+          path: releases
+          if-no-files-found: error
+          retention-days: 7
+
+      # macOS: drag-to-install DMG with "READ ME FIRST.txt" (xattr command for unnotarized builds).
+      - name: Make DMG
+        if: runner.os == 'macOS'
+        run: build/macos/make-dmg.sh "releases/$PACK_ID-${{ matrix.channel }}-Portable.zip" "$VERSION" ${{ matrix.rid }} dist
+
+      - name: Upload DMG
+        if: runner.os == 'macOS'
+        uses: actions/upload-artifact@v7
+        with:
+          name: dmg-${{ matrix.channel }}
+          path: dist/*.dmg
+          if-no-files-found: error
+          retention-days: 7
+
+  android:
+    name: Build Android APK
+    needs: [prepare, test]
+    runs-on: ubuntu-latest
+    env:
+      VERSION: ${{ needs.prepare.outputs.version }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json
+
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Install Android workload
+        run: dotnet workload install android
+
+      # ---------------------------------------------------------------------------------------
+      # SIGNING PLACEHOLDER: until a keystore exists the APK is signed with the debug key.
+      # Later: decode a base64 keystore secret to a file and add
+      #   -p:AndroidKeyStore=true -p:AndroidSigningKeyStore=lumio.keystore
+      #   -p:AndroidSigningKeyAlias=... -p:AndroidSigningKeyPass=... -p:AndroidSigningStorePass=...
+      # Android updates go through a store or APK downloads, not Velopack.
+      # ---------------------------------------------------------------------------------------
+      - name: Build APK
+        run: >
+          dotnet publish src/Lumio.Android/Lumio.Android.csproj
+          -c Release -f net10.0-android
+          -p:ApplicationDisplayVersion=$VERSION
+          -p:ApplicationVersion=${{ github.run_number }}
+          -o publish/android
+
+      - name: Rename APK
+        run: |
+          apk=$(ls publish/android/*-Signed.apk | head -n1)
+          mkdir -p dist && cp "$apk" "dist/Lumio-$VERSION-android.apk"
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v7
+        with:
+          name: android
+          path: dist/*.apk
+          if-no-files-found: error
+          retention-days: 7
+
+  publish:
+    name: Publish GitHub release
+    needs: [prepare, desktop, android]
+    runs-on: ubuntu-latest
+    env:
+      VERSION: ${{ needs.prepare.outputs.version }}
+      TAG: ${{ needs.prepare.outputs.tag }}
+      PRERELEASE: ${{ needs.prepare.outputs.prerelease }}
+      GH_TOKEN: ${{ secrets.GHTOKENWORKFLOW }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json
+
+      - run: dotnet tool restore
+
+      - uses: actions/download-artifact@v8
+        with:
+          path: artifacts
+
+      # One upload per channel, in sequence: the first creates the tag and release at this
+      # commit, later ones merge into it. Each channel gets its own releases.<channel>.json.
+      - name: Upload update packages
+        shell: bash
+        run: |
+          set -euo pipefail
+          pre=""; [[ "$PRERELEASE" == "true" ]] && pre="--pre"
+          for dir in artifacts/velopack-*; do
+            channel="${dir#artifacts/velopack-}"
+            echo "::group::Uploading $channel"
+            dotnet vpk upload github --repoUrl "$REPO_URL" --channel "$channel" \
+              -o "$dir" --token "$GH_TOKEN" \
+              --tag "$TAG" --targetCommitish "$GITHUB_SHA" \
+              --releaseName "Lumio $VERSION" --merge --publish $pre
+            echo "::endgroup::"
+          done
+
+      - name: Attach DMGs and Android APK
+        run: gh release upload "$TAG" artifacts/dmg-*/*.dmg artifacts/android/*.apk --repo "$GITHUB_REPOSITORY" --clobber
+
+      - name: Release notes
+        shell: bash
+        run: |
+          notes=$(gh api "repos/$GITHUB_REPOSITORY/releases/generate-notes" -f tag_name="$TAG" --jq .body)
+          {
+            echo "## Install"
+            echo
+            echo "- **macOS**: download the \`.dmg\` for your Mac (\`osx-arm64\` = Apple silicon, \`osx-x64\` = Intel), drag Lumio to Applications, then run this once in Terminal (the build isn't notarized yet):"
+            echo
+            echo '  ```bash'
+            echo '  xattr -dr com.apple.quarantine /Applications/Lumio.app'
+            echo '  ```'
+            echo "- **Windows**: \`Lumio.Desktop-win-x64-Setup.exe\` (or \`win-arm64\`). SmartScreen may warn: choose More info → Run anyway."
+            echo "- **Linux**: the \`.AppImage\` for your architecture (\`linux-x64\` or \`linux-arm64\`), then \`chmod +x\` it."
+            echo "- **Android**: \`Lumio-$VERSION-android.apk\` (allow installs from your browser)."
+            echo
+            printf '%s\n' "$notes"
+          } > notes.md
+          gh release edit "$TAG" --repo "$GITHUB_REPOSITORY" --notes-file notes.md
+          echo "Published ${{ github.server_url }}/$GITHUB_REPOSITORY/releases/tag/$TAG" >> "$GITHUB_STEP_SUMMARY"
+
+      # ---------------------------------------------------------------------------------------
+      # PUSH-TO-APPS PLACEHOLDER: installed apps will pick this release up by polling the
+      # GitHub Releases feed through Velopack's GithubSource once IAppUpdateService is built.
+      # If the feed moves to a bucket/CDN later, mirror the artifacts there in this job.
+      # ---------------------------------------------------------------------------------------

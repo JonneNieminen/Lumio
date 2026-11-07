@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Media;
 using Lumio.Core.Secrets;
 using Microsoft.Extensions.DependencyInjection;
+using Velopack;
 
 namespace Lumio.Desktop;
 
@@ -11,6 +12,11 @@ internal sealed class Program
     [STAThread]
     public static void Main(string[] args)
     {
+        // Must run first: during install, update and uninstall Velopack starts the app with hook
+        // arguments, and Run() handles them and exits. No-op when not installed (dotnet run, IDE).
+        // Checking for and applying updates comes later, behind an app-owned IAppUpdateService.
+        VelopackApp.Build().Run();
+
         App.ConfigurePlatformServices = services =>
             services.AddSingleton<ISecretStore>(DesktopSecretStore.Create());
 
@@ -18,6 +24,7 @@ internal sealed class Program
     }
 
     // Avalonia configuration; also used by the visual designer and the DevTools previewer.
+    // Keep Velopack out of here: the previewer calls this method.
     public static AppBuilder BuildAvaloniaApp()
         => AppBuilder.Configure<App>()
             .UsePlatformDetect()

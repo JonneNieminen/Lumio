@@ -1,0 +1,160 @@
+# Build: tests, then app artifacts for every platform Lumio supports.
+# Runs on pushes to main, on pull requests and on demand. Dependabot's PRs run the full
+# matrix like any other PR; the "Build result" job is the single check to require before
+# merging them. Needs no secrets, because Dependabot PRs can't read repository secrets.
+name: Build
+
+on:
+  push:
+    branches: [main]
+    paths-ignore: ["**.md"]
+  pull_request:
+    paths-ignore: ["**.md"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+  # CI builds get a pre-release version so they never look like a real release.
+  CI_VERSION: 0.0.0-ci.${{ github.run_number }}
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json
+
+      - name: Test
+        run: dotnet test tests/Lumio.Tests -c Release --logger "trx;LogFileName=results.trx" --results-directory test-results
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-results
+          path: test-results
+          retention-days: 14
+
+  desktop:
+    name: Desktop (${{ matrix.rid }})
+    needs: test
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: windows-latest,   rid: win-x64 }
+          - { os: windows-latest,   rid: win-arm64 }
+          - { os: macos-latest,     rid: osx-arm64, mac: true }
+          - { os: macos-latest,     rid: osx-x64,   mac: true }
+          - { os: ubuntu-latest,    rid: linux-x64 }
+          - { os: ubuntu-24.04-arm, rid: linux-arm64 }
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json
+
+      - name: Publish (self-contained)
+        shell: bash
+        run: >
+          dotnet publish src/Lumio.Desktop/Lumio.Desktop.csproj
+          -c Release -r ${{ matrix.rid }} --self-contained
+          -p:Version=$CI_VERSION
+          -o publish/${{ matrix.rid }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: Lumio-${{ matrix.rid }}
+          path: publish/${{ matrix.rid }}
+          retention-days: 14
+
+      # macOS: build the same DMG the Release workflow ships, so it's testable from any PR.
+      - name: Pack .app (Velopack)
+        if: matrix.mac
+        shell: bash
+        run: |
+          dotnet tool restore
+          dotnet vpk pack --packId Lumio.Desktop --packVersion "$CI_VERSION" --packTitle Lumio \
+            --packDir publish/${{ matrix.rid }} --mainExe Lumio.Desktop \
+            --icon assets/icons/lumio-icon.icns --runtime ${{ matrix.rid }} \
+            --channel ${{ matrix.rid }} --outputDir releases
+
+      - name: Make DMG
+        if: matrix.mac
+        run: build/macos/make-dmg.sh releases/Lumio.Desktop-${{ matrix.rid }}-Portable.zip "$CI_VERSION" ${{ matrix.rid }} dist
+
+      - name: Upload DMG
+        if: matrix.mac
+        uses: actions/upload-artifact@v7
+        with:
+          name: Lumio-${{ matrix.rid }}-dmg
+          path: dist/*.dmg
+          if-no-files-found: error
+          retention-days: 14
+
+  android:
+    name: Android
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json
+
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Install Android workload
+        run: dotnet workload install android
+
+      # Unsigned for now: .NET signs Release APKs with the debug key when no keystore is given.
+      # SIGNING PLACEHOLDER: see release.yml for the keystore properties to add.
+      - name: Build APK
+        run: >
+          dotnet publish src/Lumio.Android/Lumio.Android.csproj
+          -c Release -f net10.0-android
+          -p:ApplicationDisplayVersion=$CI_VERSION
+          -p:ApplicationVersion=${{ github.run_number }}
+          -o publish/android
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: Lumio-android
+          path: publish/android/*-Signed.apk
+          if-no-files-found: error
+          retention-days: 14
+
+  # One required check for branch protection and Dependabot PRs: green only when the tests,
+  # every desktop target and Android all built.
+  result:
+    name: Build result
+    if: always()
+    needs: [test, desktop, android]
+    runs-on: ubuntu-latest
+    steps:
+      - name: All builds succeeded
+        env:
+          RESULTS: ${{ join(needs.*.result, ' ') }}
+        run: |
+          echo "Results: $RESULTS"
+          for r in $RESULTS; do [[ "$r" == "success" ]] || { echo "::error::A build job did not succeed ($r)."; exit 1; }; done

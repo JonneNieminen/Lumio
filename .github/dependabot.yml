@@ -1,0 +1,60 @@
+# Keeps every dependency Lumio uses up to date:
+# NuGet packages (Directory.Packages.props) and .NET tools (.config/dotnet-tools.json),
+# the .NET SDK (global.json) and the GitHub Actions used by the workflows.
+# Related packages are grouped so their versions move together in one PR.
+version: 2
+
+updates:
+  - package-ecosystem: nuget
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: Europe/Helsinki
+    open-pull-requests-limit: 10
+    labels: [dependencies, nuget]
+    commit-message:
+      prefix: "deps"
+    groups:
+      # Avalonia packages must share one version (AvaloniaVersion in Directory.Packages.props).
+      avalonia:
+        patterns: ["Avalonia", "Avalonia.*", "AvaloniaUI.*"]
+      # The Velopack runtime library and the vpk CLI must stay on the same version.
+      velopack:
+        patterns: ["Velopack", "vpk"]
+      microsoft:
+        patterns: ["Microsoft.Extensions.*", "CommunityToolkit.*"]
+      android:
+        patterns: ["Xamarin.*"]
+      testing:
+        patterns: ["xunit*", "Microsoft.NET.Test.Sdk"]
+
+  - package-ecosystem: dotnet-sdk
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: Europe/Helsinki
+    labels: [dependencies, dotnet]
+    commit-message:
+      prefix: "deps"
+    ignore:
+      # A new major .NET version means retargeting the projects; do that deliberately.
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: Europe/Helsinki
+    labels: [dependencies, ci]
+    commit-message:
+      prefix: "ci"
+    groups:
+      actions:
+        patterns: ["*"]
