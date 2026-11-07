@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Report a security vulnerability
+    url: https://github.com/JonneNieminen/Lumio/security/advisories/new
+    about: Please report security problems privately, not as public issues.
+  - name: Install help (macOS "damaged" or "unverified" app)
+    url: https://github.com/JonneNieminen/Lumio#install
+    about: Unnotarized builds need one xattr command. The README explains it.

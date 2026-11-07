@@ -1,0 +1,53 @@
+name: Bug report
+description: Something in Lumio doesn't work as expected
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for taking the time to report a problem. **Never paste real API keys or tokens.** For security problems, use [private reporting](https://github.com/JonneNieminen/Lumio/security/advisories/new) instead.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What did you do, what did you expect, and what happened instead?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Add a connection → Custom REST API
+        2. Choose API key header, base URL https://api.example.com
+        3. …
+  - type: input
+    id: version
+    attributes:
+      label: Lumio version
+      description: Settings → About
+      placeholder: 0.1.0
+    validations:
+      required: true
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform
+      options: [macOS (Apple silicon), macOS (Intel), Windows (x64), Windows (ARM), Linux (x64), Linux (ARM), Android]
+    validations:
+      required: true
+  - type: input
+    id: os
+    attributes:
+      label: OS version
+      placeholder: macOS 26.1, Windows 11 24H2, Ubuntu 26.04, Android 16
+  - type: input
+    id: provider
+    attributes:
+      label: Provider and auth type
+      placeholder: Stripe · Bearer token
+  - type: textarea
+    id: logs
+    attributes:
+      label: Error message or check result
+      description: The check summary and advice shown in Lumio. Remove anything secret.
+      render: text

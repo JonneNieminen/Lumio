@@ -1,0 +1,27 @@
+name: Provider request
+description: Ask for a built-in provider in the connection wizard
+labels: [enhancement, provider]
+body:
+  - type: input
+    id: name
+    attributes:
+      label: Provider
+      placeholder: Linear
+    validations:
+      required: true
+  - type: input
+    id: docs
+    attributes:
+      label: API docs URL
+      placeholder: https://developers.linear.app
+    validations:
+      required: true
+  - type: textarea
+    id: details
+    attributes:
+      label: Base URL, health endpoint and auth
+      description: A cheap, read-only endpoint that proves the key works, and how the key is sent.
+      placeholder: |
+        Base URL: https://api.linear.app
+        Health: POST /graphql { viewer { id } }
+        Auth: Authorization header with a personal API key

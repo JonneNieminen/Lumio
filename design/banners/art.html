@@ -1,0 +1,153 @@
+<!doctype html>
+<!--
+  Repo imagery for Lumio, rendered to PNG by design/banners/render.sh (headless Chrome).
+  ?art=hero|social|guided|dashboard|secure|everywhere  &theme=dark|light
+  Colors come from lumio-theme (Nightshift = dark, Daybreak = light).
+-->
+<html>
+<head>
+<meta charset="utf-8" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=block" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #12152B; --s1: #1A1E3C; --s2: #232850; --s3: #2C3260; --border: #343A6B; --border-strong: #4A5190;
+    --text: #F4EFE2; --text2: #B9BCD9; --muted: #8388B3;
+    --accent: #FFC857; --accent-text: #FFC857; --on-accent: #232850; --accent-soft: #3A3640;
+    --success: #5DE0B0; --success-soft: #23394C; --warning: #FF9F43; --warning-soft: #3A303D;
+    --danger: #FF6B7A; --danger-soft: #3A2945; --info: #7C9CFF; --info-soft: #283057;
+    --glow: 0 0 0 1px rgba(255, 200, 87, .45), 0 0 28px rgba(255, 200, 87, .30);
+    --shadow: 0 4px 12px rgba(0, 0, 0, .40);
+  }
+  [data-theme="light"] {
+    --bg: #FBF7EF; --s1: #FFFFFF; --s2: #F4EFE2; --s3: #ECE5D3; --border: #E3DAC4; --border-strong: #C9BEA4;
+    --text: #232850; --text2: #4F5478; --muted: #7A7E9C;
+    --accent: #E08E00; --accent-text: #9A5F00; --on-accent: #232850; --accent-soft: #FBEFDB;
+    --success: #17744A; --success-soft: #E8F1ED; --warning: #9C5600; --warning-soft: #F5EEE6;
+    --danger: #C0283C; --danger-soft: #F9EAEC; --info: #2F4FD0; --info-soft: #EAEDFA;
+    --glow: 0 0 0 1px rgba(224, 142, 0, .45), 0 0 28px rgba(224, 142, 0, .24);
+    --shadow: 0 4px 12px rgba(35, 40, 80, .12);
+  }
+  * { box-sizing: border-box; margin: 0; }
+  body { font-family: Inter, -apple-system, "Helvetica Neue", sans-serif; background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; overflow: hidden; }
+  .art { position: relative; overflow: hidden; background: var(--bg); }
+  .mono { font-family: "JetBrains Mono", ui-monospace, monospace; }
+  .wm { font-weight: 600; letter-spacing: -0.035em; line-height: 1; }
+  .wm i { font-style: normal; color: var(--accent-text); }
+  .tag { color: var(--text2); letter-spacing: -0.01em; line-height: 1.4; }
+  .card { background: var(--s1); border: 1px solid var(--border); border-radius: 14px; box-shadow: var(--shadow); }
+  .badge { display: inline-flex; align-items: center; gap: 6px; height: 24px; padding: 0 9px; border-radius: 6px; font-size: 13px; font-weight: 500; }
+  .pill { display: inline-flex; align-items: center; gap: 9px; height: 38px; padding: 0 15px; border-radius: 10px; background: var(--s1); border: 1px solid var(--border); color: var(--text2); font-size: 16px; font-weight: 500; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+  .tile { display: flex; align-items: center; justify-content: center; border-radius: 10px; background: var(--s2); font-weight: 600; color: var(--text); }
+  .card-title { font-size: 34px; font-weight: 600; letter-spacing: -0.02em; }
+  .card-sub { margin-top: 10px; font-size: 18px; color: var(--text2); line-height: 1.45; max-width: 500px; }
+  svg { display: block; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+const q = new URLSearchParams(location.search);
+const art = q.get("art") || "hero";
+const theme = q.get("theme") || "dark";
+document.documentElement.dataset.theme = theme;
+
+// The Lumio mark ("Elbow ring"), 64-grid, as defined in lumio-theme/tokens.json.
+function mark(size, fg = "#F4EFE2", amber = "#FFC857") {
+  return `<svg width="${size}" height="${size}" viewBox="0 0 64 64">
+    <circle cx="30" cy="32" r="14" fill="none" stroke="${fg}" stroke-opacity="0.16" stroke-width="7"/>
+    <path d="M16 14V32A14 14 0 0 0 30 46H44" fill="none" stroke="${fg}" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="47" cy="46" r="10" fill="${amber}" fill-opacity="0.25"/>
+    <circle cx="47" cy="46" r="5" fill="${amber}"/></svg>`;
+}
+// App icon: brand navy tile (15/64 corner radius) with the cream mark, the same in both themes.
+const appIcon = (size) => `<div style="width:${size}px;height:${size}px;border-radius:${size * 15 / 64}px;background:#232850;box-shadow:0 ${size * .06}px ${size * .18}px rgba(18,21,43,.45);overflow:hidden">${mark(size)}</div>`;
+const wordmark = (px) => `<span class="wm" style="font-size:${px}px">lum<i>io</i></span>`;
+
+const check = (c = "currentColor", s = 14) => `<svg width="${s}" height="${s}" viewBox="0 0 16 16"><path d="M3.5 8.5l3 3 6-7" fill="none" stroke="${c}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const STATUS = {
+  ok:   ["var(--success)", "var(--success-soft)", "Connected"],
+  warn: ["var(--warning)", "var(--warning-soft)", "Needs attention"],
+  fail: ["var(--danger)",  "var(--danger-soft)",  "Failed"],
+};
+const badge = (k) => { const [c, b, t] = STATUS[k]; return `<span class="badge" style="color:${c};background:${b}"><span class="dot" style="background:${c};width:7px;height:7px"></span>${t}</span>`; };
+
+// Signature stepper: done steps quiet, one lit step, upcoming steps dim.
+// Each step is a fixed-width column (labels never collide); a connector of length `gap` joins node edges.
+function stepper(labels, current, gap, node = 34, font = 15, col = 112) {
+  const pull = (col - node) / 2;
+  let s = `<div style="display:flex;align-items:flex-start">`;
+  labels.forEach((l, i) => {
+    const done = i < current, lit = i === current;
+    const n = done
+      ? `<div style="width:${node}px;height:${node}px;border-radius:50%;background:var(--success-soft);color:var(--success);display:flex;align-items:center;justify-content:center">${check("var(--success)", node * .45)}</div>`
+      : lit
+        ? `<div style="width:${node}px;height:${node}px;border-radius:50%;background:var(--accent);color:var(--on-accent);box-shadow:var(--glow);display:flex;align-items:center;justify-content:center;font-weight:600;font-size:${font}px">${i + 1}</div>`
+        : `<div style="width:${node}px;height:${node}px;border-radius:50%;border:2px solid var(--border-strong);color:var(--muted);display:flex;align-items:center;justify-content:center;font-weight:500;font-size:${font}px">${i + 1}</div>`;
+    s += `<div style="display:flex;flex-direction:column;align-items:center;gap:10px;width:${col}px;flex:none">
+      ${n}<span style="white-space:nowrap;font-size:${font}px;font-weight:${lit ? 600 : 500};color:${lit ? "var(--text)" : "var(--muted)"}">${l}</span></div>`;
+    if (i < labels.length - 1)
+      s += `<div style="flex:none;width:${gap}px;height:2px;margin:${node / 2 - 1}px -${pull}px 0;background:${i < current ? "var(--accent)" : "var(--border)"}"></div>`;
+  });
+  return s + `</div>`;
+}
+
+// A connection card as on the dashboard.
+const conn = (mono, name, url, k, w = 330) => `<div class="card" style="width:${w}px;padding:16px 18px">
+  <div style="display:flex;align-items:center;gap:12px"><div class="tile" style="width:40px;height:40px;font-size:15px">${mono}</div>
+  <div style="font-size:16px;font-weight:600">${name}</div></div>
+  <div class="mono" style="margin-top:12px;font-size:12.5px;color:var(--text2)">${url}</div>
+  <div style="margin-top:12px;display:flex;justify-content:space-between;align-items:center">${badge(k)}<span style="font-size:12.5px;color:var(--muted)">Checked 2 min ago</span></div></div>`;
+
+const root = document.getElementById("root");
+if (art === "hero" || art === "social") {
+  const W = 1280, H = art === "hero" ? 440 : 640, big = art === "social";
+  root.innerHTML = `<div class="art" style="width:${W}px;height:${H}px">
+    <div style="position:absolute;right:-60px;top:${H / 2 - 230}px;width:620px;height:460px;border-radius:50%;background:radial-gradient(closest-side, ${theme === "dark" ? "rgba(255,200,87,.10)" : "rgba(224,142,0,.10)"}, transparent)"></div>
+    <div style="position:absolute;right:${big ? -96 : 56}px;top:${H / 2 - (big ? 170 : 150)}px;display:flex;flex-direction:column;gap:14px;transform:rotate(-3deg)">
+      ${conn("Gh", "GitHub", "api.github.com/user", "ok", 360)}
+      <div style="margin-left:46px">${conn("St", "Stripe", "api.stripe.com/v1/balance", "ok", 360)}</div>
+      ${big ? `<div style="margin-left:14px">${conn("Hf", "Hugging Face", "huggingface.co/api/whoami-v2", "warn", 360)}</div>` : ""}
+    </div>
+    <div style="position:absolute;right:0;top:0;bottom:0;width:90px;background:linear-gradient(90deg,transparent,var(--bg))"></div>
+    <div style="position:absolute;left:92px;top:0;bottom:0;display:flex;align-items:center;gap:44px">
+      ${appIcon(big ? 220 : 196)}
+      <div>
+        ${wordmark(big ? 128 : 112)}
+        <div class="tag" style="margin-top:20px;font-size:${big ? 28 : 24}px;max-width:${big ? 600 : 470}px;white-space:nowrap">Connect any API, one lit step at a time.</div>
+        <div style="margin-top:${big ? 34 : 28}px;margin-left:-${big ? 38 : 35}px">${stepper(["Provider", "Authenticate", "Configure", "Test"], 1, big ? 92 : 80, big ? 34 : 30, big ? 16 : 14, big ? 110 : 100)}</div>
+      </div>
+    </div>
+  </div>`;
+} else {
+  const W = 640, H = 400;
+  const body = {
+    guided: {
+      title: "Guided setup", sub: "Pick a provider, add your key, test the connection. Each step lights up as you go.",
+      art: `<div style="position:absolute;left:4px;right:0;bottom:58px">${stepper(["Provider", "Authenticate", "Configure", "Test"], 2, 112, 40, 15, 108)}</div>` },
+    dashboard: {
+      title: "Health at a glance", sub: "A clear dashboard shows every integration's status, latency and recent checks.",
+      art: `<div style="position:absolute;left:40px;right:40px;bottom:36px;display:grid;grid-template-columns:repeat(3,1fr);gap:12px">${[["ok", "3", "Connected"], ["warn", "1", "Needs attention"], ["fail", "1", "Failed"]].map(([k, n, t]) => `
+        <div class="card" style="height:128px;padding:18px;display:flex;flex-direction:column;justify-content:space-between">
+          <span style="display:flex;align-items:center;gap:7px;font-size:12px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--text2)"><span class="dot" style="background:${STATUS[k][0]}"></span>${t}</span>
+          <span style="font-size:44px;font-weight:600;letter-spacing:-0.02em">${n}</span></div>`).join("")}</div>` },
+    secure: {
+      title: "Secrets stay secret", sub: "Keys and tokens live in your operating system's secure store, never in Lumio's own files.",
+      art: `<div style="position:absolute;left:40px;right:40px;bottom:40px;display:flex;gap:12px;flex-wrap:wrap">${["macOS Keychain", "Windows Credential Manager", "Secret Service", "Android Keystore", "Masked by default", "Sent only to your API"].map((t) => `<span class="pill"><span class="dot"></span>${t}</span>`).join("")}</div>` },
+    everywhere: {
+      title: "Runs everywhere", sub: "One native app for macOS, Windows, Linux and Android, in Nightshift or Daybreak.",
+      art: `<div style="position:absolute;left:40px;right:40px;bottom:40px;display:grid;grid-template-columns:repeat(4,1fr);gap:12px">${[["macOS", "arm64 · x64"], ["Windows", "x64 · arm64"], ["Linux", "x64 · arm64"], ["Android", "phone · tablet"]].map(([p, a], i) => `
+        <div class="card" style="height:118px;padding:16px;display:flex;flex-direction:column;justify-content:space-between;${i === 0 ? "box-shadow:var(--glow);border-color:transparent" : ""}">
+          <div style="width:30px;height:30px;border-radius:8px;overflow:hidden">${appIcon(30)}</div>
+          <div><div style="font-size:16px;font-weight:600">${p}</div><div style="margin-top:3px;font-size:13px;color:var(--muted)">${a}</div></div></div>`).join("")}</div>` },
+  }[art];
+  root.innerHTML = `<div class="art" style="width:${W}px;height:${H}px;background:var(--s1)">
+    <div style="position:absolute;left:40px;top:40px;right:40px"><div class="card-title">${body.title}</div><div class="card-sub">${body.sub}</div></div>
+    ${body.art}
+  </div>`;
+}
+</script>
+</body>
+</html>
