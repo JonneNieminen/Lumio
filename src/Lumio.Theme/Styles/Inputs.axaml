@@ -1,0 +1,68 @@
+<!-- Inputs: surface-2 fill, border outline, border-strong on hover, focus-ring on focus. -->
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Style Selector="TextBox">
+    <Setter Property="CornerRadius" Value="{StaticResource LmRadiusMd}" />
+    <Setter Property="Padding" Value="12,9" />
+    <Setter Property="MinHeight" Value="40" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+  </Style>
+  <Style Selector="ComboBox">
+    <Setter Property="CornerRadius" Value="{StaticResource LmRadiusMd}" />
+    <Setter Property="MinHeight" Value="40" />
+    <Setter Property="Padding" Value="12,8" />
+    <Setter Property="HorizontalAlignment" Value="Stretch" />
+  </Style>
+  <Style Selector="NumericUpDown">
+    <Setter Property="CornerRadius" Value="{StaticResource LmRadiusMd}" />
+    <Setter Property="MinHeight" Value="40" />
+  </Style>
+
+  <!-- Field label above an input -->
+  <Style Selector="TextBlock.field-label">
+    <Setter Property="FontWeight" Value="{StaticResource LmFontWeightMedium}" />
+    <Setter Property="Foreground" Value="{DynamicResource LmTextPrimaryBrush}" />
+    <Setter Property="Margin" Value="0,0,0,6" />
+  </Style>
+  <!-- Help line below an input -->
+  <Style Selector="TextBlock.field-help">
+    <Setter Property="FontSize" Value="{StaticResource LmFontSizeSm}" />
+    <Setter Property="Foreground" Value="{DynamicResource LmTextSecondaryBrush}" />
+    <Setter Property="TextWrapping" Value="Wrap" />
+    <Setter Property="Margin" Value="0,6,0,0" />
+  </Style>
+
+  <!-- Segmented choice built from RadioButtons (theme, auth kind) -->
+  <Style Selector="RadioButton.segment">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Name="PART_Border"
+                Background="{DynamicResource LmSurface2Brush}"
+                BorderBrush="{DynamicResource LmBorderBrush}"
+                BorderThickness="1"
+                CornerRadius="{StaticResource LmRadiusMd}"
+                Padding="14,8"
+                MinHeight="36">
+          <ContentPresenter Content="{TemplateBinding Content}"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Foreground="{TemplateBinding Foreground}" />
+        </Border>
+      </ControlTemplate>
+    </Setter>
+    <Setter Property="Foreground" Value="{DynamicResource LmTextSecondaryBrush}" />
+    <Setter Property="FontWeight" Value="{StaticResource LmFontWeightMedium}" />
+    <Setter Property="Cursor" Value="Hand" />
+    <Style Selector="^:pointerover /template/ Border#PART_Border">
+      <Setter Property="BorderBrush" Value="{DynamicResource LmBorderStrongBrush}" />
+    </Style>
+    <Style Selector="^:checked">
+      <Setter Property="Foreground" Value="{DynamicResource LmAccentTextBrush}" />
+      <Style Selector="^ /template/ Border#PART_Border">
+        <Setter Property="Background" Value="{DynamicResource LmAccentSoftBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource LmAccentTextBrush}" />
+      </Style>
+    </Style>
+  </Style>
+</Styles>

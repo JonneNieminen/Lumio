@@ -1,0 +1,79 @@
+<!-- Type scale (px): 12, 13, 14 base, 16, 18, 22, 28, 36. Sentence case everywhere. -->
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Style Selector=":is(TextBlock).display">
+    <Setter Property="FontSize" Value="{StaticResource LmFontSize2xl}" />
+    <Setter Property="FontWeight" Value="{StaticResource LmFontWeightSemibold}" />
+    <Setter Property="LetterSpacing" Value="-0.56" />
+    <Setter Property="LineHeight" Value="34" />
+  </Style>
+  <Style Selector=":is(TextBlock).h1">
+    <Setter Property="FontSize" Value="{StaticResource LmFontSize2xl}" />
+    <Setter Property="FontWeight" Value="{StaticResource LmFontWeightMedium}" />
+    <Setter Property="LetterSpacing" Value="-0.56" />
+    <Setter Property="LineHeight" Value="34" />
+    <Setter Property="Foreground" Value="{DynamicResource LmTextPrimaryBrush}" />
+  </Style>
+  <Style Selector=":is(TextBlock).h2">
+    <Setter Property="FontSize" Value="{StaticResource LmFontSizeXl}" />
+    <Setter Property="FontWeight" Value="{StaticResource LmFontWeightMedium}" />
+    <Setter Property="Foreground" Value="{DynamicResource LmTextPrimaryBrush}" />
+  </Style>
+  <Style Selector=":is(TextBlock).h3">
+    <Setter Property="FontSize" Value="{StaticResource LmFontSizeLg}" />
+    <Setter Property="FontWeight" Value="{StaticResource LmFontWeightMedium}" />
+    <Setter Property="Foreground" Value="{DynamicResource LmTextPrimaryBrush}" />
+  </Style>
+  <Style Selector=":is(TextBlock).h4">
+    <Setter Property="FontSize" Value="{StaticResource LmFontSizeMd}" />
+    <Setter Property="FontWeight" Value="{StaticResource LmFontWeightMedium}" />
+    <Setter Property="Foreground" Value="{DynamicResource LmTextPrimaryBrush}" />
+  </Style>
+  <Style Selector=":is(TextBlock).label">
+    <Setter Property="FontWeight" Value="{StaticResource LmFontWeightMedium}" />
+    <Setter Property="Foreground" Value="{DynamicResource LmTextPrimaryBrush}" />
+  </Style>
+  <Style Selector=":is(TextBlock).secondary">
+    <Setter Property="Foreground" Value="{DynamicResource LmTextSecondaryBrush}" />
+  </Style>
+  <Style Selector=":is(TextBlock).muted">
+    <Setter Property="Foreground" Value="{DynamicResource LmTextMutedBrush}" />
+  </Style>
+  <Style Selector=":is(TextBlock).caption">
+    <Setter Property="FontSize" Value="{StaticResource LmFontSizeXs}" />
+    <Setter Property="Foreground" Value="{DynamicResource LmTextMutedBrush}" />
+  </Style>
+  <!-- Tiny overline labels are the only all-caps text. Write the text in capitals. -->
+  <Style Selector=":is(TextBlock).overline">
+    <Setter Property="FontSize" Value="{StaticResource LmFontSizeXs}" />
+    <Setter Property="FontWeight" Value="{StaticResource LmFontWeightMedium}" />
+    <Setter Property="LetterSpacing" Value="0.5" />
+    <Setter Property="Foreground" Value="{DynamicResource LmTextMutedBrush}" />
+  </Style>
+  <Style Selector=":is(TextBlock).mono">
+    <Setter Property="FontFamily" Value="{StaticResource LmFontMono}" />
+    <Setter Property="FontSize" Value="{StaticResource LmFontSizeSm}" />
+  </Style>
+  <Style Selector=":is(TextBlock).accent">
+    <Setter Property="Foreground" Value="{DynamicResource LmAccentTextBrush}" />
+  </Style>
+  <Style Selector=":is(TextBlock).success">
+    <Setter Property="Foreground" Value="{DynamicResource LmSuccessBrush}" />
+  </Style>
+  <Style Selector=":is(TextBlock).warning">
+    <Setter Property="Foreground" Value="{DynamicResource LmWarningBrush}" />
+  </Style>
+  <Style Selector=":is(TextBlock).danger">
+    <Setter Property="Foreground" Value="{DynamicResource LmDangerBrush}" />
+  </Style>
+  <Style Selector=":is(TextBlock).info">
+    <Setter Property="Foreground" Value="{DynamicResource LmInfoBrush}" />
+  </Style>
+  <Style Selector=":is(TextBlock).wrap">
+    <Setter Property="TextWrapping" Value="Wrap" />
+  </Style>
+  <Style Selector="TextBox.mono">
+    <Setter Property="FontFamily" Value="{StaticResource LmFontMono}" />
+    <Setter Property="FontSize" Value="{StaticResource LmFontSizeSm}" />
+  </Style>
+</Styles>

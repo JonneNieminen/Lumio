@@ -1,0 +1,24 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="Lumio.Theme.LumioTheme">
+  <Styles.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <!-- Keep Tokens first: LumioTheme.axaml.cs reads it to build the Fluent palettes. -->
+        <ResourceInclude Source="avares://Lumio.Theme/Tokens/Tokens.g.axaml" />
+        <ResourceInclude Source="avares://Lumio.Theme/Tokens/Icons.axaml" />
+        <ResourceInclude Source="avares://Lumio.Theme/Styles/ControlThemes.axaml" />
+      </ResourceDictionary.MergedDictionaries>
+    </ResourceDictionary>
+  </Styles.Resources>
+
+  <FluentTheme />
+
+  <StyleInclude Source="avares://Lumio.Theme/Styles/Base.axaml" />
+  <StyleInclude Source="avares://Lumio.Theme/Styles/Typography.axaml" />
+  <StyleInclude Source="avares://Lumio.Theme/Styles/Buttons.axaml" />
+  <StyleInclude Source="avares://Lumio.Theme/Styles/Inputs.axaml" />
+  <StyleInclude Source="avares://Lumio.Theme/Styles/Surfaces.axaml" />
+  <StyleInclude Source="avares://Lumio.Theme/Styles/Lists.axaml" />
+  <StyleInclude Source="avares://Lumio.Theme/Styles/Motion.axaml" />
+</Styles>

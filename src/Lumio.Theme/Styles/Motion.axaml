@@ -1,0 +1,21 @@
+<!--
+  Motion: fast (120 ms) for hover and press, base (200 ms) for most transitions,
+  slow (320 ms) for step changes. Put the class "reduce-motion" on a root element to switch
+  every Lumio transition to an instant state change.
+-->
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:c="using:Lumio.Theme.Controls">
+  <Style Selector="Button /template/ ContentPresenter#PART_ContentPresenter, ListBoxItem /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Transitions">
+      <Transitions>
+        <BrushTransition Property="Background" Duration="0:0:0.120" />
+        <BrushTransition Property="BorderBrush" Duration="0:0:0.120" />
+      </Transitions>
+    </Setter>
+  </Style>
+
+  <Style Selector=".reduce-motion Button /template/ ContentPresenter#PART_ContentPresenter, .reduce-motion ListBoxItem /template/ ContentPresenter#PART_ContentPresenter, .reduce-motion c|StepperItem /template/ Border#PART_Node, .reduce-motion c|StepperItem /template/ Border#PART_LineBefore, .reduce-motion c|StepperItem /template/ Border#PART_LineAfter">
+    <Setter Property="Transitions" Value="{x:Null}" />
+  </Style>
+</Styles>

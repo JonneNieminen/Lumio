@@ -1,0 +1,225 @@
+<!-- Control themes for Lumio's own controls. -->
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:c="using:Lumio.Theme.Controls">
+
+  <!-- ===== Stepper ===== -->
+  <ControlTheme x:Key="{x:Type c:Stepper}" TargetType="c:Stepper">
+    <Setter Property="Focusable" Value="False" />
+    <Setter Property="ItemsPanel">
+      <ItemsPanelTemplate>
+        <UniformGrid Rows="1" />
+      </ItemsPanelTemplate>
+    </Setter>
+    <Setter Property="Template">
+      <ControlTemplate>
+        <ItemsPresenter Name="PART_ItemsPresenter" ItemsPanel="{TemplateBinding ItemsPanel}" />
+      </ControlTemplate>
+    </Setter>
+  </ControlTheme>
+
+  <!--
+    One step: a 32 px node on a 2 px path. Path segments behind the current step are accent,
+    ahead of it border. Only the current node carries the glow.
+  -->
+  <ControlTheme x:Key="{x:Type c:StepperItem}" TargetType="c:StepperItem">
+    <Setter Property="Focusable" Value="False" />
+    <Setter Property="Foreground" Value="{DynamicResource LmTextMutedBrush}" />
+    <Setter Property="FontSize" Value="{StaticResource LmFontSizeSm}" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="*,Auto,*">
+          <Border Name="PART_LineBefore" Grid.Column="0" Height="2" CornerRadius="1"
+                  VerticalAlignment="Center" Margin="0,0,8,0"
+                  Background="{DynamicResource LmBorderBrush}">
+            <Border.Transitions>
+              <Transitions>
+                <BrushTransition Property="Background" Duration="0:0:0.320" Easing="CubicEaseOut" />
+              </Transitions>
+            </Border.Transitions>
+          </Border>
+          <Border Name="PART_Node" Grid.Column="1" Width="32" Height="32" CornerRadius="16"
+                  BorderThickness="1.5"
+                  BorderBrush="{DynamicResource LmBorderStrongBrush}"
+                  Background="Transparent">
+            <Border.Transitions>
+              <Transitions>
+                <BrushTransition Property="Background" Duration="0:0:0.320" Easing="CubicEaseOut" />
+                <BrushTransition Property="BorderBrush" Duration="0:0:0.320" Easing="CubicEaseOut" />
+                <BoxShadowsTransition Property="BoxShadow" Duration="0:0:0.320" Easing="CubicEaseOut" />
+              </Transitions>
+            </Border.Transitions>
+            <Panel>
+              <TextBlock Name="PART_Number" Text="{TemplateBinding NumberText}"
+                         HorizontalAlignment="Center" VerticalAlignment="Center"
+                         FontSize="{StaticResource LmFontSizeSm}"
+                         FontWeight="{StaticResource LmFontWeightMedium}"
+                         Foreground="{DynamicResource LmTextMutedBrush}" />
+              <PathIcon Name="PART_Check" Data="{StaticResource LmIconCheck}"
+                        Width="16" Height="16" IsVisible="False"
+                        Foreground="{DynamicResource LmSuccessBrush}" />
+            </Panel>
+          </Border>
+          <Border Name="PART_LineAfter" Grid.Column="2" Height="2" CornerRadius="1"
+                  VerticalAlignment="Center" Margin="8,0,0,0"
+                  Background="{DynamicResource LmBorderBrush}">
+            <Border.Transitions>
+              <Transitions>
+                <BrushTransition Property="Background" Duration="0:0:0.320" Easing="CubicEaseOut" />
+              </Transitions>
+            </Border.Transitions>
+          </Border>
+          <ContentPresenter Name="PART_Label" Grid.Row="1" Grid.ColumnSpan="3"
+                            Margin="4,10,4,0"
+                            HorizontalAlignment="Center"
+                            Content="{TemplateBinding Content}"
+                            ContentTemplate="{TemplateBinding ContentTemplate}"
+                            Foreground="{TemplateBinding Foreground}">
+            <ContentPresenter.Styles>
+              <Style Selector="TextBlock">
+                <Setter Property="TextAlignment" Value="Center" />
+                <Setter Property="TextWrapping" Value="Wrap" />
+              </Style>
+            </ContentPresenter.Styles>
+          </ContentPresenter>
+        </Grid>
+      </ControlTemplate>
+    </Setter>
+
+    <Style Selector="^:first /template/ Border#PART_LineBefore">
+      <Setter Property="Opacity" Value="0" />
+    </Style>
+    <Style Selector="^:last /template/ Border#PART_LineAfter">
+      <Setter Property="Opacity" Value="0" />
+    </Style>
+
+    <!-- Done: success check on success-soft; the path behind it is lit -->
+    <Style Selector="^:done">
+      <Setter Property="Foreground" Value="{DynamicResource LmTextSecondaryBrush}" />
+      <Style Selector="^ /template/ Border#PART_Node">
+        <Setter Property="Background" Value="{DynamicResource LmSuccessSoftBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource LmSuccessSoftBrush}" />
+      </Style>
+      <Style Selector="^ /template/ TextBlock#PART_Number">
+        <Setter Property="IsVisible" Value="False" />
+      </Style>
+      <Style Selector="^ /template/ PathIcon#PART_Check">
+        <Setter Property="IsVisible" Value="True" />
+      </Style>
+      <Style Selector="^ /template/ Border#PART_LineBefore">
+        <Setter Property="Background" Value="{DynamicResource LmAccentBrush}" />
+      </Style>
+      <Style Selector="^ /template/ Border#PART_LineAfter">
+        <Setter Property="Background" Value="{DynamicResource LmAccentBrush}" />
+      </Style>
+    </Style>
+
+    <!-- Current: accent fill, on-accent number, the glow -->
+    <Style Selector="^:current">
+      <Setter Property="Foreground" Value="{DynamicResource LmTextPrimaryBrush}" />
+      <Setter Property="FontWeight" Value="{StaticResource LmFontWeightMedium}" />
+      <Style Selector="^ /template/ Border#PART_Node">
+        <Setter Property="Background" Value="{DynamicResource LmAccentBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource LmAccentBrush}" />
+        <Setter Property="BoxShadow" Value="{DynamicResource LmGlow}" />
+      </Style>
+      <Style Selector="^ /template/ TextBlock#PART_Number">
+        <Setter Property="Foreground" Value="{DynamicResource LmOnAccentBrush}" />
+      </Style>
+      <Style Selector="^ /template/ Border#PART_LineBefore">
+        <Setter Property="Background" Value="{DynamicResource LmAccentBrush}" />
+      </Style>
+    </Style>
+  </ControlTheme>
+
+  <!-- ===== Status badge ===== -->
+  <ControlTheme x:Key="{x:Type c:StatusBadge}" TargetType="c:StatusBadge">
+    <Setter Property="Background" Value="{DynamicResource LmSurface3Brush}" />
+    <Setter Property="Foreground" Value="{DynamicResource LmTextSecondaryBrush}" />
+    <Setter Property="FontSize" Value="{StaticResource LmFontSizeXs}" />
+    <Setter Property="FontWeight" Value="{StaticResource LmFontWeightMedium}" />
+    <Setter Property="HorizontalAlignment" Value="Left" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Background="{TemplateBinding Background}"
+                CornerRadius="{StaticResource LmRadiusSm}"
+                Padding="8,3,10,3">
+          <StackPanel Orientation="Horizontal" Spacing="6">
+            <PathIcon Name="PART_Icon" Width="12" Height="12"
+                      Foreground="{TemplateBinding Foreground}"
+                      Data="{StaticResource LmIconCircle}" />
+            <TextBlock Text="{TemplateBinding Text}" VerticalAlignment="Center"
+                       Foreground="{TemplateBinding Foreground}" />
+          </StackPanel>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+    <Style Selector="^:success">
+      <Setter Property="Background" Value="{DynamicResource LmSuccessSoftBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource LmSuccessBrush}" />
+      <Style Selector="^ /template/ PathIcon#PART_Icon">
+        <Setter Property="Data" Value="{StaticResource LmIconCheckCircle}" />
+      </Style>
+    </Style>
+    <Style Selector="^:warning">
+      <Setter Property="Background" Value="{DynamicResource LmWarningSoftBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource LmWarningBrush}" />
+      <Style Selector="^ /template/ PathIcon#PART_Icon">
+        <Setter Property="Data" Value="{StaticResource LmIconAlert}" />
+      </Style>
+    </Style>
+    <Style Selector="^:danger">
+      <Setter Property="Background" Value="{DynamicResource LmDangerSoftBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource LmDangerBrush}" />
+      <Style Selector="^ /template/ PathIcon#PART_Icon">
+        <Setter Property="Data" Value="{StaticResource LmIconCloseCircle}" />
+      </Style>
+    </Style>
+    <Style Selector="^:info">
+      <Setter Property="Background" Value="{DynamicResource LmInfoSoftBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource LmInfoBrush}" />
+      <Style Selector="^ /template/ PathIcon#PART_Icon">
+        <Setter Property="Data" Value="{StaticResource LmIconInfo}" />
+      </Style>
+    </Style>
+  </ControlTheme>
+
+  <!-- ===== Lumio mark (Elbow ring), 64 x 64 brand grid ===== -->
+  <ControlTheme x:Key="{x:Type c:LumioMark}" TargetType="c:LumioMark">
+    <Setter Property="Foreground" Value="{DynamicResource LmTextPrimaryBrush}" />
+    <Setter Property="NodeBrush" Value="{DynamicResource LmAccentBrush}" />
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="Width" Value="32" />
+    <Setter Property="Height" Value="32" />
+    <Setter Property="Focusable" Value="False" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Viewbox Stretch="Uniform">
+          <Canvas Width="64" Height="64">
+            <Rectangle Name="PART_Tile" Width="64" Height="64" RadiusX="15" RadiusY="15"
+                       Fill="{TemplateBinding Background}" />
+            <!-- Faint track: the journey still ahead -->
+            <Path Data="M16,32 A14,14 0 1 1 44,32 A14,14 0 1 1 16,32 Z"
+                  Stroke="{TemplateBinding Foreground}" StrokeThickness="7" Opacity="0.16" />
+            <!-- The L, bending through a quarter of the ring -->
+            <Path Data="M16 14V32A14 14 0 0 0 30 46H44"
+                  Stroke="{TemplateBinding Foreground}" StrokeThickness="7"
+                  StrokeLineCap="Round" StrokeJoin="Round" />
+            <!-- Halo and lit node: a connection made -->
+            <Ellipse Canvas.Left="37" Canvas.Top="36" Width="20" Height="20"
+                     Fill="{TemplateBinding NodeBrush}" Opacity="0.25" />
+            <Ellipse Canvas.Left="42" Canvas.Top="41" Width="10" Height="10"
+                     Fill="{TemplateBinding NodeBrush}" />
+          </Canvas>
+        </Viewbox>
+      </ControlTemplate>
+    </Setter>
+    <!-- App-icon tile: brand navy, cream strokes, amber node in both themes -->
+    <Style Selector="^:tile">
+      <Setter Property="Background" Value="{StaticResource LmBrandNavyBrush}" />
+      <Setter Property="Foreground" Value="{StaticResource LmBrandCreamBrush}" />
+      <Setter Property="NodeBrush" Value="{StaticResource LmBrandAmberBrush}" />
+    </Style>
+  </ControlTheme>
+</ResourceDictionary>

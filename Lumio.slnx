@@ -1,0 +1,14 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Lumio.Core/Lumio.Core.csproj" />
+    <Project Path="src/Lumio.Theme/Lumio.Theme.csproj" />
+    <Project Path="src/Lumio/Lumio.csproj" />
+    <Project Path="src/Lumio.Desktop/Lumio.Desktop.csproj" />
+    <Project Path="src/Lumio.Android/Lumio.Android.csproj">
+      <Deploy />
+    </Project>
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Lumio.Tests/Lumio.Tests.csproj" />
+  </Folder>
+</Solution>

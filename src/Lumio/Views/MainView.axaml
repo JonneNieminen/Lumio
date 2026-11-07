@@ -1,0 +1,54 @@
+<!--
+  App shell. Wide screens: the drawer is an inline sidebar. Narrow screens (phones): it becomes an
+  overlay opened from the navigation bar. Pages live in RootNavigation.
+-->
+<DrawerPage xmlns="https://github.com/avaloniaui"
+            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+            xmlns:vm="using:Lumio.ViewModels"
+            xmlns:c="using:Lumio.Theme.Controls"
+            x:Class="Lumio.Views.MainView"
+            x:DataType="vm:ShellViewModel"
+            DrawerLength="248"
+            DrawerLayoutBehavior="Split"
+            DrawerBreakpointLength="760"
+            IsOpen="True">
+
+  <DrawerPage.DrawerHeader>
+    <StackPanel Orientation="Horizontal" Spacing="10" Margin="20,22,20,18">
+      <c:LumioMark Width="28" Height="28" />
+      <TextBlock FontSize="21" FontWeight="SemiBold" LetterSpacing="-0.42" VerticalAlignment="Center"
+                 Foreground="{DynamicResource LmTextPrimaryBrush}">
+        <Run Text="lum" /><Run Text="io" Foreground="{DynamicResource LmAccentTextBrush}" />
+      </TextBlock>
+    </StackPanel>
+  </DrawerPage.DrawerHeader>
+
+  <DrawerPage.Drawer>
+    <ListBox Name="SectionList" Classes="nav" Margin="12,4"
+             SelectedIndex="{Binding SelectedSectionIndex}">
+      <ListBoxItem>
+        <StackPanel Orientation="Horizontal" Spacing="12">
+          <PathIcon Data="{StaticResource LmIconPlug}" />
+          <TextBlock Text="Connections" VerticalAlignment="Center" />
+        </StackPanel>
+      </ListBoxItem>
+      <ListBoxItem>
+        <StackPanel Orientation="Horizontal" Spacing="12">
+          <PathIcon Data="{StaticResource LmIconSettings}" />
+          <TextBlock Text="Settings" VerticalAlignment="Center" />
+        </StackPanel>
+      </ListBoxItem>
+    </ListBox>
+  </DrawerPage.Drawer>
+
+  <DrawerPage.DrawerFooter>
+    <StackPanel Orientation="Horizontal" Spacing="8" Margin="24,12,20,20">
+      <PathIcon Data="{StaticResource LmIconKey}" Width="14" Height="14"
+                Foreground="{DynamicResource LmTextMutedBrush}" />
+      <TextBlock Classes="caption" Text="{Binding SecretStoreText}" VerticalAlignment="Center"
+                 TextWrapping="Wrap" />
+    </StackPanel>
+  </DrawerPage.DrawerFooter>
+
+  <NavigationPage x:Name="RootNavigationPage" />
+</DrawerPage>

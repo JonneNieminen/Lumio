@@ -1,0 +1,75 @@
+<v:LumioPage xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:v="using:Lumio.Views"
+             xmlns:vm="using:Lumio.ViewModels"
+             xmlns:c="using:Lumio.Theme.Controls"
+             xmlns:conv="using:Lumio.Converters"
+             x:Class="Lumio.Views.SettingsPage"
+             x:DataType="vm:SettingsViewModel"
+             Header="{Binding Title}">
+  <ScrollViewer>
+    <StackPanel Margin="{OnFormFactor Desktop='32,8,32,32', Mobile='16,8,16,24'}" Spacing="20" MaxWidth="720"
+                HorizontalAlignment="Stretch">
+
+      <Border Classes="card">
+        <StackPanel Spacing="16">
+          <StackPanel Spacing="2">
+            <TextBlock Classes="h4" Text="Appearance" />
+            <TextBlock Classes="secondary wrap" FontSize="13"
+                       Text="Nightshift is Lumio's home. Daybreak suits bright rooms." />
+          </StackPanel>
+          <WrapPanel ItemSpacing="8" LineSpacing="8">
+            <RadioButton Classes="segment" GroupName="theme" Content="Nightshift (dark)"
+                         IsChecked="{Binding Theme, Converter={x:Static conv:EnumEqualsConverter.Instance}, ConverterParameter=Dark}" />
+            <RadioButton Classes="segment" GroupName="theme" Content="Daybreak (light)"
+                         IsChecked="{Binding Theme, Converter={x:Static conv:EnumEqualsConverter.Instance}, ConverterParameter=Light}" />
+            <RadioButton Classes="segment" GroupName="theme" Content="Match system"
+                         IsChecked="{Binding Theme, Converter={x:Static conv:EnumEqualsConverter.Instance}, ConverterParameter=System}" />
+          </WrapPanel>
+          <Border Classes="divider" />
+          <Grid ColumnDefinitions="*,Auto">
+            <StackPanel Spacing="2" Margin="0,0,16,0">
+              <TextBlock Classes="label" Text="Reduce motion" />
+              <TextBlock Classes="secondary wrap" FontSize="13"
+                         Text="Step changes and hovers switch instantly instead of fading." />
+            </StackPanel>
+            <ToggleSwitch Grid.Column="1" IsChecked="{Binding ReduceMotion}" OnContent="" OffContent=""
+                          AutomationProperties.Name="Reduce motion" />
+          </Grid>
+        </StackPanel>
+      </Border>
+
+      <Border Classes="card">
+        <StackPanel Spacing="12">
+          <TextBlock Classes="h4" Text="Security" />
+          <Grid ColumnDefinitions="Auto,*">
+            <PathIcon Data="{StaticResource LmIconKey}" Width="18" Height="18" VerticalAlignment="Top" Margin="0,2,0,0"
+                      Foreground="{DynamicResource LmAccentTextBrush}" />
+            <StackPanel Grid.Column="1" Margin="12,0,0,0" Spacing="2">
+              <TextBlock Classes="label" Text="{Binding SecretStoreName}" />
+              <TextBlock Classes="secondary wrap" FontSize="13" Text="{Binding SecretStoreNote}" />
+            </StackPanel>
+          </Grid>
+          <Border Classes="divider" />
+          <StackPanel Spacing="4">
+            <TextBlock Classes="key" Text="Connection settings are saved in" />
+            <SelectableTextBlock Classes="mono" Text="{Binding DataFolder}" TextWrapping="Wrap" />
+          </StackPanel>
+        </StackPanel>
+      </Border>
+
+      <Border Classes="card">
+        <Grid ColumnDefinitions="Auto,*">
+          <c:LumioMark ShowTile="True" Width="48" Height="48" />
+          <StackPanel Grid.Column="1" Margin="16,0,0,0" VerticalAlignment="Center" Spacing="2">
+            <TextBlock FontSize="18" FontWeight="SemiBold" LetterSpacing="-0.36">
+              <Run Text="lum" /><Run Text="io" Foreground="{DynamicResource LmAccentTextBrush}" />
+              <Run Text="{Binding Version}" FontSize="13" FontWeight="Normal" Foreground="{DynamicResource LmTextMutedBrush}" />
+            </TextBlock>
+            <TextBlock Classes="secondary" Text="Connect any API, one lit step at a time." />
+          </StackPanel>
+        </Grid>
+      </Border>
+    </StackPanel>
+  </ScrollViewer>
+</v:LumioPage>

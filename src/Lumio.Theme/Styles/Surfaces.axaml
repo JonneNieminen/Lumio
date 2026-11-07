@@ -1,0 +1,110 @@
+<!-- Planes and containers: bg, surface-1 (cards), surface-2 (raised), surface-3 (popovers). -->
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Style Selector="Border.card">
+    <Setter Property="Background" Value="{DynamicResource LmSurface1Brush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource LmBorderBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="{StaticResource LmRadiusLg}" />
+    <Setter Property="Padding" Value="20" />
+    <Setter Property="BoxShadow" Value="{DynamicResource LmShadowSm}" />
+  </Style>
+  <Style Selector="Border.card.flush">
+    <Setter Property="Padding" Value="0" />
+  </Style>
+  <Style Selector="Border.raised">
+    <Setter Property="Background" Value="{DynamicResource LmSurface2Brush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource LmBorderBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="{StaticResource LmRadiusMd}" />
+    <Setter Property="Padding" Value="12" />
+  </Style>
+  <Style Selector="Border.divider">
+    <Setter Property="Height" Value="1" />
+    <Setter Property="Background" Value="{DynamicResource LmBorderBrush}" />
+  </Style>
+
+  <!-- Provider monogram tile -->
+  <Style Selector="Border.monogram">
+    <Setter Property="Width" Value="40" />
+    <Setter Property="Height" Value="40" />
+    <Setter Property="CornerRadius" Value="{StaticResource LmRadiusMd}" />
+    <Setter Property="Background" Value="{DynamicResource LmSurface3Brush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource LmBorderBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Style Selector="^ > TextBlock">
+      <Setter Property="HorizontalAlignment" Value="Center" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+      <Setter Property="FontWeight" Value="{StaticResource LmFontWeightSemibold}" />
+      <Setter Property="FontSize" Value="{StaticResource LmFontSizeSm}" />
+      <Setter Property="Foreground" Value="{DynamicResource LmTextPrimaryBrush}" />
+    </Style>
+  </Style>
+  <Style Selector="Border.monogram.large">
+    <Setter Property="Width" Value="48" />
+    <Setter Property="Height" Value="48" />
+    <Setter Property="CornerRadius" Value="{StaticResource LmRadiusLg}" />
+    <Style Selector="^ > TextBlock">
+      <Setter Property="FontSize" Value="{StaticResource LmFontSizeMd}" />
+    </Style>
+  </Style>
+
+  <!-- Banners: soft status background, status-coloured icon and title, body in text-primary -->
+  <Style Selector="Border.banner">
+    <Setter Property="CornerRadius" Value="{StaticResource LmRadiusMd}" />
+    <Setter Property="Padding" Value="16,14" />
+    <Setter Property="Background" Value="{DynamicResource LmSurface2Brush}" />
+    <Style Selector="^ PathIcon">
+      <Setter Property="Width" Value="18" />
+      <Setter Property="Height" Value="18" />
+      <Setter Property="VerticalAlignment" Value="Top" />
+      <Setter Property="Margin" Value="0,1,0,0" />
+    </Style>
+  </Style>
+  <Style Selector="Border.banner.success">
+    <Setter Property="Background" Value="{DynamicResource LmSuccessSoftBrush}" />
+    <Style Selector="^ PathIcon">
+      <Setter Property="Foreground" Value="{DynamicResource LmSuccessBrush}" />
+    </Style>
+    <Style Selector="^ TextBlock.title">
+      <Setter Property="Foreground" Value="{DynamicResource LmSuccessBrush}" />
+    </Style>
+  </Style>
+  <Style Selector="Border.banner.warning">
+    <Setter Property="Background" Value="{DynamicResource LmWarningSoftBrush}" />
+    <Style Selector="^ PathIcon">
+      <Setter Property="Foreground" Value="{DynamicResource LmWarningBrush}" />
+    </Style>
+    <Style Selector="^ TextBlock.title">
+      <Setter Property="Foreground" Value="{DynamicResource LmWarningBrush}" />
+    </Style>
+  </Style>
+  <Style Selector="Border.banner.danger">
+    <Setter Property="Background" Value="{DynamicResource LmDangerSoftBrush}" />
+    <Style Selector="^ PathIcon">
+      <Setter Property="Foreground" Value="{DynamicResource LmDangerBrush}" />
+    </Style>
+    <Style Selector="^ TextBlock.title">
+      <Setter Property="Foreground" Value="{DynamicResource LmDangerBrush}" />
+    </Style>
+  </Style>
+  <Style Selector="Border.banner.info">
+    <Setter Property="Background" Value="{DynamicResource LmInfoSoftBrush}" />
+    <Style Selector="^ PathIcon">
+      <Setter Property="Foreground" Value="{DynamicResource LmInfoBrush}" />
+    </Style>
+    <Style Selector="^ TextBlock.title">
+      <Setter Property="Foreground" Value="{DynamicResource LmInfoBrush}" />
+    </Style>
+  </Style>
+  <Style Selector="Border.banner TextBlock.title">
+    <Setter Property="FontWeight" Value="{StaticResource LmFontWeightMedium}" />
+    <Setter Property="TextWrapping" Value="Wrap" />
+  </Style>
+
+  <!-- Key/value rows on detail pages -->
+  <Style Selector="TextBlock.key">
+    <Setter Property="Foreground" Value="{DynamicResource LmTextSecondaryBrush}" />
+    <Setter Property="FontSize" Value="{StaticResource LmFontSizeSm}" />
+  </Style>
+</Styles>

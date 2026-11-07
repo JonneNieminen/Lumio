@@ -1,0 +1,40 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <!-- App canvas -->
+  <Style Selector="Window">
+    <Setter Property="Background" Value="{DynamicResource LmBgBrush}" />
+    <Setter Property="FontFamily" Value="{StaticResource LmFontSans}" />
+    <Setter Property="FontSize" Value="{StaticResource LmFontSizeBase}" />
+  </Style>
+  <Style Selector="TopLevel">
+    <Setter Property="FontFamily" Value="{StaticResource LmFontSans}" />
+  </Style>
+
+  <!-- Pages: content sits on bg; the drawer (sidebar) is a raised surface-2 plane. -->
+  <Style Selector="ContentPage">
+    <Setter Property="Background" Value="{DynamicResource LmBgBrush}" />
+  </Style>
+  <Style Selector="DrawerPage">
+    <Setter Property="DrawerBackground" Value="{DynamicResource LmSurface2Brush}" />
+    <Setter Property="BackdropBrush" Value="{DynamicResource LmOverlayBrush}" />
+  </Style>
+
+  <!-- Keyboard focus: 2 px focus-ring outline with a 2 px offset, on every focusable control. -->
+  <Style Selector=":is(Control)">
+    <Setter Property="FocusAdorner">
+      <FocusAdornerTemplate>
+        <Border BorderThickness="2"
+                BorderBrush="{DynamicResource LmFocusRingBrush}"
+                CornerRadius="12"
+                Margin="-4" />
+      </FocusAdornerTemplate>
+    </Setter>
+  </Style>
+
+  <!-- Hairline separator -->
+  <Style Selector="Separator">
+    <Setter Property="Background" Value="{DynamicResource LmBorderBrush}" />
+    <Setter Property="Height" Value="1" />
+    <Setter Property="Margin" Value="0" />
+  </Style>
+</Styles>

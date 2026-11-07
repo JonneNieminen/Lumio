@@ -1,0 +1,11 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:theme="using:Lumio.Theme"
+             x:Class="Lumio.App"
+             Name="Lumio"
+             RequestedThemeVariant="Dark">
+  <!-- Nightshift (dark) is the primary brand expression; Settings can switch to Daybreak or System. -->
+  <Application.Styles>
+    <theme:LumioTheme />
+  </Application.Styles>
+</Application>

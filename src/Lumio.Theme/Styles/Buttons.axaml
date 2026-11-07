@@ -1,0 +1,147 @@
+<!--
+  Buttons. The default Button is Lumio's secondary button (surface-2 with a hairline border).
+  Classes: primary (one per view), ghost, destructive, danger-solid (confirmations only),
+  icon, link, small, block.
+-->
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Style Selector="Button">
+    <Setter Property="CornerRadius" Value="{StaticResource LmRadiusMd}" />
+    <Setter Property="Padding" Value="16,8" />
+    <Setter Property="MinHeight" Value="36" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="FontWeight" Value="{StaticResource LmFontWeightMedium}" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+    <Setter Property="HorizontalContentAlignment" Value="Center" />
+    <Style Selector="^ PathIcon">
+      <Setter Property="Width" Value="16" />
+      <Setter Property="Height" Value="16" />
+    </Style>
+  </Style>
+
+  <Style Selector="Button.small">
+    <Setter Property="MinHeight" Value="32" />
+    <Setter Property="Padding" Value="12,6" />
+    <Setter Property="FontSize" Value="{StaticResource LmFontSizeSm}" />
+  </Style>
+  <Style Selector="Button.block">
+    <Setter Property="HorizontalAlignment" Value="Stretch" />
+  </Style>
+
+  <!-- Primary: accent fill, on-accent text -->
+  <Style Selector="Button.primary">
+    <Setter Property="Background" Value="{DynamicResource LmAccentBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource LmOnAccentBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource LmAccentBrush}" />
+    <Style Selector="^:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource LmAccentHoverBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource LmAccentHoverBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource LmOnAccentBrush}" />
+    </Style>
+    <Style Selector="^:pressed /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource LmAccentActiveBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource LmAccentActiveBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource LmOnAccentBrush}" />
+    </Style>
+    <Style Selector="^:disabled /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource LmSurface2Brush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource LmBorderBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource LmTextMutedBrush}" />
+    </Style>
+  </Style>
+
+  <!-- Ghost: transparent, surface-2 on hover -->
+  <Style Selector="Button.ghost, Button.icon, Button#PART_BackButton">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderBrush" Value="Transparent" />
+    <Setter Property="Foreground" Value="{DynamicResource LmTextSecondaryBrush}" />
+    <Style Selector="^:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource LmSurface2Brush}" />
+      <Setter Property="BorderBrush" Value="Transparent" />
+      <Setter Property="Foreground" Value="{DynamicResource LmTextPrimaryBrush}" />
+    </Style>
+    <Style Selector="^:pressed /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource LmSurface3Brush}" />
+      <Setter Property="BorderBrush" Value="Transparent" />
+    </Style>
+    <Style Selector="^:disabled /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderBrush" Value="Transparent" />
+    </Style>
+  </Style>
+  <!-- NavigationPage back / drawer toggle in the navigation bar -->
+  <Style Selector="Button#PART_BackButton">
+    <Setter Property="Margin" Value="8,0,4,0" />
+    <Setter Property="Foreground" Value="{DynamicResource LmTextPrimaryBrush}" />
+  </Style>
+  <Style Selector="Button.icon">
+    <Setter Property="Padding" Value="8" />
+    <Setter Property="MinWidth" Value="36" />
+  </Style>
+
+  <!-- Link: accent text, no chrome -->
+  <Style Selector="Button.link">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderBrush" Value="Transparent" />
+    <Setter Property="Foreground" Value="{DynamicResource LmAccentTextBrush}" />
+    <Setter Property="Padding" Value="4,2" />
+    <Setter Property="MinHeight" Value="0" />
+    <Style Selector="^:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderBrush" Value="Transparent" />
+      <Setter Property="Foreground" Value="{DynamicResource LmAccentTextBrush}" />
+    </Style>
+  </Style>
+
+  <!-- Destructive: danger text on danger-soft -->
+  <Style Selector="Button.destructive">
+    <Setter Property="Background" Value="{DynamicResource LmDangerSoftBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource LmDangerBrush}" />
+    <Setter Property="BorderBrush" Value="Transparent" />
+    <Style Selector="^:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource LmDangerSoftBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource LmDangerBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource LmDangerBrush}" />
+    </Style>
+    <Style Selector="^:pressed /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource LmDangerSoftBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource LmDangerBrush}" />
+    </Style>
+  </Style>
+
+  <!-- Solid danger: only inside a confirmation -->
+  <Style Selector="Button.danger-solid">
+    <Setter Property="Background" Value="{DynamicResource LmDangerBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource LmBgBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource LmDangerBrush}" />
+    <Style Selector="^:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource LmDangerBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource LmTextPrimaryBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource LmBgBrush}" />
+    </Style>
+    <Style Selector="^:pressed /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource LmDangerBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource LmBgBrush}" />
+    </Style>
+  </Style>
+
+  <!-- A whole card that acts as a button (integration cards) -->
+  <Style Selector="Button.card">
+    <Setter Property="Background" Value="{DynamicResource LmSurface1Brush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource LmBorderBrush}" />
+    <Setter Property="CornerRadius" Value="{StaticResource LmRadiusLg}" />
+    <Setter Property="Padding" Value="20" />
+    <Setter Property="HorizontalAlignment" Value="Stretch" />
+    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+    <Setter Property="VerticalContentAlignment" Value="Stretch" />
+    <Setter Property="FontWeight" Value="{StaticResource LmFontWeightRegular}" />
+    <Style Selector="^:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource LmSurface1Brush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource LmBorderStrongBrush}" />
+    </Style>
+    <Style Selector="^:pressed /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource LmSurface2Brush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource LmBorderStrongBrush}" />
+    </Style>
+  </Style>
+</Styles>

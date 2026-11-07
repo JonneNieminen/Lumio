@@ -1,0 +1,210 @@
+<!-- One connection: health, last result, details, recent checks, removal. Primary: Test connection. -->
+<v:LumioPage xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:v="using:Lumio.Views"
+             xmlns:vm="using:Lumio.ViewModels"
+             xmlns:c="using:Lumio.Theme.Controls"
+             xmlns:conv="using:Lumio.Converters"
+             x:Class="Lumio.Views.ConnectionDetailPage"
+             x:DataType="vm:ConnectionDetailViewModel"
+             Header="{Binding Title}">
+  <ScrollViewer>
+    <Panel Container.Name="detail" Container.Sizing="Width">
+      <Panel.Styles>
+        <Style Selector="UniformGrid.stats">
+          <Setter Property="Columns" Value="3" />
+        </Style>
+        <Style Selector="StackPanel.content">
+          <Setter Property="Margin" Value="32,8,32,32" />
+        </Style>
+        <ContainerQuery Name="detail" Query="max-width:640">
+          <Style Selector="StackPanel.content">
+            <Setter Property="Margin" Value="16,8,16,24" />
+          </Style>
+          <Style Selector="UniformGrid.stats">
+            <Setter Property="Columns" Value="1" />
+          </Style>
+          <Style Selector="Grid.history-row TextBlock.when">
+            <Setter Property="IsVisible" Value="False" />
+          </Style>
+        </ContainerQuery>
+      </Panel.Styles>
+
+      <StackPanel Classes="content" Spacing="20" MaxWidth="960">
+
+        <Border Classes="banner warning" IsVisible="{Binding IsMissing}">
+          <TextBlock Classes="title" Text="This connection was removed." />
+        </Border>
+
+        <!-- Identity and primary action -->
+        <Grid ColumnDefinitions="Auto,*,Auto" IsVisible="{Binding !IsMissing}">
+          <Border Classes="monogram large" VerticalAlignment="Center">
+            <TextBlock Text="{Binding Monogram}" />
+          </Border>
+          <StackPanel Grid.Column="1" Margin="16,0" VerticalAlignment="Center" Spacing="6">
+            <TextBlock Classes="h2" Text="{Binding Name}" TextTrimming="CharacterEllipsis" />
+            <StackPanel Orientation="Horizontal" Spacing="10">
+              <c:StatusBadge Text="{Binding StatusText}"
+                             Kind="{Binding Status, Converter={x:Static conv:StatusToBadgeKindConverter.Instance}}" />
+              <TextBlock Classes="caption" Text="{Binding ProviderName}" VerticalAlignment="Center" />
+            </StackPanel>
+          </StackPanel>
+          <Button Grid.Column="2" Classes="primary" Command="{Binding TestCommand}" VerticalAlignment="Center">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <PathIcon Data="{StaticResource LmIconBolt}" />
+              <TextBlock Text="Test connection" />
+            </StackPanel>
+          </Button>
+        </Grid>
+
+        <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsTesting}" />
+
+        <TextBlock Classes="danger wrap" Text="{Binding ErrorText}"
+                   IsVisible="{Binding ErrorText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+
+        <!-- Health numbers -->
+        <UniformGrid Classes="stats" IsVisible="{Binding !IsMissing}" Margin="0,0,-12,-12">
+          <Border Classes="card" Margin="0,0,12,12">
+            <StackPanel Spacing="6">
+              <TextBlock Classes="overline" Text="LAST CHECK" />
+              <TextBlock Classes="display" Text="{Binding LastCheckText}" />
+            </StackPanel>
+          </Border>
+          <Border Classes="card" Margin="0,0,12,12">
+            <StackPanel Spacing="6">
+              <TextBlock Classes="overline" Text="AVERAGE LATENCY" />
+              <TextBlock Classes="display" Text="{Binding LatencyText}" />
+            </StackPanel>
+          </Border>
+          <Border Classes="card" Margin="0,0,12,12">
+            <StackPanel Spacing="6">
+              <TextBlock Classes="overline" Text="HEALTHY CHECKS" />
+              <TextBlock Classes="display" Text="{Binding HealthyText}" />
+              <TextBlock Classes="caption" Text="{Binding HealthyCaption}" />
+            </StackPanel>
+          </Border>
+        </UniformGrid>
+
+        <!-- Latest result -->
+        <Panel IsVisible="{Binding HasLastCheck}">
+          <Border Classes="banner success" IsVisible="{Binding LastIsHealthy}">
+            <Grid ColumnDefinitions="Auto,*">
+              <PathIcon Data="{StaticResource LmIconCheckCircle}" />
+              <TextBlock Grid.Column="1" Margin="12,0,0,0" Classes="title" Text="{Binding LastSummary}" />
+            </Grid>
+          </Border>
+          <Border Classes="banner warning" IsVisible="{Binding LastIsDegraded}">
+            <Grid ColumnDefinitions="Auto,*">
+              <PathIcon Data="{StaticResource LmIconAlert}" />
+              <StackPanel Grid.Column="1" Margin="12,0,0,0" Spacing="4">
+                <TextBlock Classes="title" Text="{Binding LastSummary}" />
+                <TextBlock Classes="wrap" Text="{Binding LastAdvice}" IsVisible="{Binding HasAdvice}" />
+              </StackPanel>
+            </Grid>
+          </Border>
+          <Border Classes="banner danger" IsVisible="{Binding LastIsFailed}">
+            <Grid ColumnDefinitions="Auto,*">
+              <PathIcon Data="{StaticResource LmIconCloseCircle}" />
+              <StackPanel Grid.Column="1" Margin="12,0,0,0" Spacing="4">
+                <TextBlock Classes="title" Text="{Binding LastSummary}" />
+                <TextBlock Classes="wrap" Text="{Binding LastAdvice}" IsVisible="{Binding HasAdvice}" />
+              </StackPanel>
+            </Grid>
+          </Border>
+        </Panel>
+
+        <!-- Details -->
+        <Border Classes="card" IsVisible="{Binding !IsMissing}">
+          <StackPanel Spacing="12">
+            <TextBlock Classes="h4" Text="Details" />
+            <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto">
+              <Grid.Styles>
+                <Style Selector="TextBlock, SelectableTextBlock">
+                  <Setter Property="Margin" Value="0,6" />
+                  <Setter Property="VerticalAlignment" Value="Center" />
+                </Style>
+                <Style Selector="TextBlock.key">
+                  <Setter Property="Margin" Value="0,6,32,6" />
+                </Style>
+              </Grid.Styles>
+              <TextBlock Classes="key" Text="Request" />
+              <SelectableTextBlock Grid.Column="1" Classes="mono" Text="{Binding Endpoint}" TextWrapping="Wrap" />
+              <TextBlock Grid.Row="1" Classes="key" Text="Authentication" />
+              <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding AuthText}" TextWrapping="Wrap" />
+              <TextBlock Grid.Row="2" Classes="key" Text="Secret" />
+              <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding SecretStorageText}" />
+              <TextBlock Grid.Row="3" Classes="key" Text="Timeout" />
+              <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding TimeoutText}" />
+              <TextBlock Grid.Row="4" Classes="key" Text="Added" />
+              <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding CreatedText}" />
+            </Grid>
+            <Button Classes="link" HorizontalAlignment="Left" IsVisible="{Binding HasDocs}"
+                    Command="{Binding OpenDocsCommand}">
+              <StackPanel Orientation="Horizontal" Spacing="6">
+                <TextBlock Text="Open API docs" />
+                <PathIcon Data="{StaticResource LmIconExternal}" Width="14" Height="14" />
+              </StackPanel>
+            </Button>
+          </StackPanel>
+        </Border>
+
+        <!-- Recent checks -->
+        <Border Classes="card flush" IsVisible="{Binding !IsMissing}">
+          <StackPanel>
+            <TextBlock Classes="h4" Text="Recent checks" Margin="20,18,20,10" />
+            <TextBlock Classes="secondary wrap" Margin="20,0,20,20" IsVisible="{Binding !HasHistory}"
+                       Text="No checks yet. Test the connection to start its history." />
+            <ItemsControl ItemsSource="{Binding History}" IsVisible="{Binding HasHistory}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:HistoryRowViewModel">
+                  <Border BorderBrush="{DynamicResource LmBorderBrush}" BorderThickness="0,1,0,0" Padding="20,12">
+                    <Grid Classes="history-row" ColumnDefinitions="140,*,Auto,Auto">
+                      <c:StatusBadge Text="{Binding OutcomeText}"
+                                     Kind="{Binding Status, Converter={x:Static conv:StatusToBadgeKindConverter.Instance}}" />
+                      <TextBlock Grid.Column="1" Text="{Binding Summary}" TextTrimming="CharacterEllipsis"
+                                 VerticalAlignment="Center" Margin="0,0,16,0" />
+                      <TextBlock Grid.Column="2" Classes="mono muted" Text="{Binding Latency}"
+                                 VerticalAlignment="Center" Margin="0,0,16,0" MinWidth="60" TextAlignment="Right" />
+                      <TextBlock Grid.Column="3" Classes="caption when" Text="{Binding When}" VerticalAlignment="Center"
+                                 MinWidth="72" TextAlignment="Right" />
+                    </Grid>
+                  </Border>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </StackPanel>
+        </Border>
+
+        <!-- Removal -->
+        <Border Classes="card" IsVisible="{Binding !IsMissing}">
+          <Panel>
+            <Grid ColumnDefinitions="*,Auto" IsVisible="{Binding !IsConfirmingRemove}">
+              <StackPanel Spacing="2" VerticalAlignment="Center" Margin="0,0,16,0">
+                <TextBlock Classes="label" Text="Remove connection" />
+                <TextBlock Classes="secondary wrap" FontSize="13"
+                           Text="Deletes its settings, history and saved secret from this device." />
+              </StackPanel>
+              <Button Grid.Column="1" Classes="destructive" Command="{Binding AskRemoveCommand}">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                  <PathIcon Data="{StaticResource LmIconTrash}" />
+                  <TextBlock Text="Remove" />
+                </StackPanel>
+              </Button>
+            </Grid>
+            <StackPanel Spacing="12" IsVisible="{Binding IsConfirmingRemove}">
+              <TextBlock Classes="label danger">
+                <Run Text="Remove" /> <Run Text="{Binding Name}" /><Run Text="?" />
+              </TextBlock>
+              <TextBlock Classes="secondary wrap"
+                         Text="Lumio deletes the saved secret from your keychain and forgets this connection's history. This can't be undone." />
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <Button Content="Keep it" Command="{Binding CancelRemoveCommand}" />
+                <Button Classes="danger-solid" Content="Remove connection" Command="{Binding ConfirmRemoveCommand}" />
+              </StackPanel>
+            </StackPanel>
+          </Panel>
+        </Border>
+      </StackPanel>
+    </Panel>
+  </ScrollViewer>
+</v:LumioPage>

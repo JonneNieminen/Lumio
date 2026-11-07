@@ -1,0 +1,298 @@
+<!--
+  Guided connection wizard. The stepper's current node is the only lit element on this view;
+  the primary button moves forward, Back/Cancel is a ghost button.
+-->
+<v:LumioPage xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:v="using:Lumio.Views"
+             xmlns:vm="using:Lumio.ViewModels"
+             xmlns:m="using:Lumio.Core.Model"
+             xmlns:c="using:Lumio.Theme.Controls"
+             xmlns:conv="using:Lumio.Converters"
+             x:Class="Lumio.Views.AddConnectionPage"
+             x:DataType="vm:AddConnectionViewModel"
+             Header="{Binding Title}">
+  <Grid RowDefinitions="Auto,*,Auto" Container.Name="wizard" Container.Sizing="Width">
+    <Grid.Styles>
+      <Style Selector="StackPanel.step">
+        <Setter Property="Margin" Value="32,16,32,32" />
+      </Style>
+      <Style Selector="UniformGrid.tiles">
+        <Setter Property="Columns" Value="2" />
+      </Style>
+      <Style Selector="Border.footer">
+        <Setter Property="Padding" Value="32,16" />
+      </Style>
+      <ContainerQuery Name="wizard" Query="max-width:640">
+        <!-- Phones: only the current step keeps its label -->
+        <Style Selector="c|StepperItem:not(:current) /template/ ContentPresenter#PART_Label">
+          <Setter Property="Opacity" Value="0" />
+        </Style>
+        <Style Selector="StackPanel.step">
+          <Setter Property="Margin" Value="16,8,16,24" />
+        </Style>
+        <Style Selector="UniformGrid.tiles">
+          <Setter Property="Columns" Value="1" />
+        </Style>
+        <Style Selector="Border.footer">
+          <Setter Property="Padding" Value="16,12" />
+        </Style>
+      </ContainerQuery>
+    </Grid.Styles>
+
+    <!-- Path of steps -->
+    <c:Stepper ItemsSource="{Binding Steps}" CurrentIndex="{Binding CurrentStep}"
+               MaxWidth="760" Margin="24,16,24,8" />
+
+    <ScrollViewer Grid.Row="1">
+      <Panel MaxWidth="720" HorizontalAlignment="Stretch">
+
+        <!-- 1. Choose provider -->
+        <StackPanel Classes="step" Spacing="16" IsVisible="{Binding IsChooseStep}">
+          <StackPanel Spacing="4">
+            <TextBlock Classes="h2" Text="Choose an API" />
+            <TextBlock Classes="secondary wrap"
+                       Text="Start from a provider with the right defaults, or use Custom for any HTTP API." />
+          </StackPanel>
+          <ListBox Classes="tiles" ItemsSource="{Binding Providers}" SelectedItem="{Binding SelectedProvider}"
+                   Margin="0,4,-12,0" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+            <ListBox.ItemsPanel>
+              <ItemsPanelTemplate>
+                <UniformGrid Classes="tiles" />
+              </ItemsPanelTemplate>
+            </ListBox.ItemsPanel>
+            <ListBox.ItemTemplate>
+              <DataTemplate x:DataType="m:Provider">
+                <Grid ColumnDefinitions="Auto,*">
+                  <Border Classes="monogram" VerticalAlignment="Top">
+                    <TextBlock Text="{Binding Monogram}" />
+                  </Border>
+                  <StackPanel Grid.Column="1" Margin="12,0,0,0" Spacing="2">
+                    <TextBlock Classes="label" Text="{Binding Name}" />
+                    <TextBlock Classes="secondary wrap" FontSize="13" Text="{Binding Description}" />
+                  </StackPanel>
+                </Grid>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+          <TextBlock Classes="danger" Text="{Binding ProviderError}"
+                     IsVisible="{Binding ProviderError, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+        </StackPanel>
+
+        <!-- 2. Authenticate -->
+        <StackPanel Classes="step" Spacing="20" IsVisible="{Binding IsAuthStep}">
+          <StackPanel Spacing="4">
+            <TextBlock Classes="h2" Text="{Binding AuthHeading}" />
+            <TextBlock Classes="secondary wrap" IsVisible="{Binding !IsPublic}"
+                       Text="Lumio sends this credential only to the API you're connecting." />
+          </StackPanel>
+
+          <!-- Custom APIs pick their auth kind -->
+          <WrapPanel IsVisible="{Binding IsCustom}" ItemSpacing="8" LineSpacing="8">
+            <RadioButton Classes="segment" GroupName="auth" Content="Bearer token"
+                         IsChecked="{Binding AuthKind, Converter={x:Static conv:EnumEqualsConverter.Instance}, ConverterParameter=Bearer}" />
+            <RadioButton Classes="segment" GroupName="auth" Content="API key header"
+                         IsChecked="{Binding AuthKind, Converter={x:Static conv:EnumEqualsConverter.Instance}, ConverterParameter=ApiKeyHeader}" />
+            <RadioButton Classes="segment" GroupName="auth" Content="Basic"
+                         IsChecked="{Binding AuthKind, Converter={x:Static conv:EnumEqualsConverter.Instance}, ConverterParameter=Basic}" />
+            <RadioButton Classes="segment" GroupName="auth" Content="None"
+                         IsChecked="{Binding AuthKind, Converter={x:Static conv:EnumEqualsConverter.Instance}, ConverterParameter=None}" />
+          </WrapPanel>
+
+          <StackPanel IsVisible="{Binding NeedsHeaderName}">
+            <TextBlock Classes="field-label" Text="Header name" />
+            <TextBox Classes="mono" Text="{Binding ApiKeyHeader}" PlaceholderText="X-API-Key" />
+          </StackPanel>
+
+          <StackPanel IsVisible="{Binding NeedsUsername}">
+            <TextBlock Classes="field-label" Text="Username" />
+            <TextBox Text="{Binding Username}" />
+            <TextBlock Classes="field-help danger" Text="{Binding UsernameError}"
+                       IsVisible="{Binding UsernameError, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+          </StackPanel>
+
+          <StackPanel IsVisible="{Binding NeedsSecret}">
+            <TextBlock Classes="field-label" Text="{Binding SecretLabel}" />
+            <Grid ColumnDefinitions="*,Auto">
+              <TextBox Name="SecretBox" Classes="mono" Text="{Binding Secret}" PasswordChar="•"
+                       RevealPassword="{Binding IsSecretRevealed}"
+                       PlaceholderText="{Binding SecretPlaceholder}"
+                       AutomationProperties.Name="{Binding SecretLabel}" />
+              <Button Grid.Column="1" Classes="icon" Margin="8,0,0,0" Command="{Binding ToggleRevealCommand}"
+                      ToolTip.Tip="Show or hide the secret"
+                      AutomationProperties.Name="Show or hide the secret">
+                <Panel>
+                  <PathIcon Data="{StaticResource LmIconEye}" IsVisible="{Binding !IsSecretRevealed}" />
+                  <PathIcon Data="{StaticResource LmIconEyeOff}" IsVisible="{Binding IsSecretRevealed}" />
+                </Panel>
+              </Button>
+            </Grid>
+            <TextBlock Classes="field-help danger" Text="{Binding SecretError}"
+                       IsVisible="{Binding SecretError, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+            <TextBlock Classes="field-help" Text="{Binding SecretHelp}"
+                       IsVisible="{Binding SecretHelp, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+          </StackPanel>
+
+          <Border Classes="banner info" IsVisible="{Binding NeedsSecret}">
+            <Grid ColumnDefinitions="Auto,*">
+              <PathIcon Data="{StaticResource LmIconKey}" />
+              <TextBlock Grid.Column="1" Margin="12,0,0,0" Classes="wrap">
+                <Run Text="Stored in" /> <Run Text="{Binding SecretStoreName}" FontWeight="Medium" /><Run Text=". It never goes into Lumio's own files." />
+              </TextBlock>
+            </Grid>
+          </Border>
+
+          <Border Classes="banner info" IsVisible="{Binding IsPublic}">
+            <Grid ColumnDefinitions="Auto,*">
+              <PathIcon Data="{StaticResource LmIconInfo}" />
+              <TextBlock Grid.Column="1" Margin="12,0,0,0" Classes="wrap"
+                         Text="This API is public, so there's nothing to enter here. Continue to check the address." />
+            </Grid>
+          </Border>
+
+          <Button Classes="link" HorizontalAlignment="Left" IsVisible="{Binding HasDocs}"
+                  Command="{Binding OpenDocsCommand}">
+            <StackPanel Orientation="Horizontal" Spacing="6">
+              <TextBlock Text="{Binding DocsText}" />
+              <PathIcon Data="{StaticResource LmIconExternal}" Width="14" Height="14" />
+            </StackPanel>
+          </Button>
+        </StackPanel>
+
+        <!-- 3. Configure -->
+        <StackPanel Classes="step" Spacing="20" IsVisible="{Binding IsConfigureStep}">
+          <StackPanel Spacing="4">
+            <TextBlock Classes="h2" Text="Check the details" />
+            <TextBlock Classes="secondary wrap"
+                       Text="Lumio checks health with one GET request to the address below." />
+          </StackPanel>
+
+          <StackPanel>
+            <TextBlock Classes="field-label" Text="Name" />
+            <TextBox Text="{Binding Name}" PlaceholderText="For example: Billing API" />
+            <TextBlock Classes="field-help danger" Text="{Binding NameError}"
+                       IsVisible="{Binding NameError, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+          </StackPanel>
+
+          <StackPanel>
+            <TextBlock Classes="field-label" Text="Base URL" />
+            <TextBox Classes="mono" Text="{Binding BaseUrl}" PlaceholderText="https://api.example.com" />
+            <TextBlock Classes="field-help danger" Text="{Binding BaseUrlError}"
+                       IsVisible="{Binding BaseUrlError, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+          </StackPanel>
+
+          <Grid ColumnDefinitions="*,16,160">
+            <StackPanel>
+              <TextBlock Classes="field-label" Text="Health path" />
+              <TextBox Classes="mono" Text="{Binding HealthPath}" PlaceholderText="/health" />
+            </StackPanel>
+            <StackPanel Grid.Column="2">
+              <TextBlock Classes="field-label" Text="Timeout (seconds)" />
+              <NumericUpDown Value="{Binding TimeoutSeconds}" Minimum="1" Maximum="120" Increment="1"
+                             FormatString="0" />
+            </StackPanel>
+          </Grid>
+
+          <Border Classes="raised">
+            <StackPanel Spacing="4">
+              <TextBlock Classes="overline" Text="REQUEST" />
+              <SelectableTextBlock Classes="mono" TextWrapping="Wrap">
+                <Run Text="GET " Foreground="{DynamicResource LmAccentTextBrush}" /><Run Text="{Binding EndpointPreview}" />
+              </SelectableTextBlock>
+            </StackPanel>
+          </Border>
+        </StackPanel>
+
+        <!-- 4. Test and save -->
+        <StackPanel Classes="step" Spacing="20" IsVisible="{Binding IsTestStep}">
+          <StackPanel Spacing="4">
+            <TextBlock Classes="h2" Text="Test and save" />
+            <TextBlock Classes="secondary wrap"
+                       Text="Lumio sent one request with your settings. Save the connection to keep watching it." />
+          </StackPanel>
+
+          <Border Classes="card" IsVisible="{Binding IsTesting}">
+            <StackPanel Spacing="12">
+              <TextBlock Classes="label" Text="Testing the connection…" />
+              <ProgressBar IsIndeterminate="True" />
+              <TextBlock Classes="mono muted" Text="{Binding EndpointPreview}" TextTrimming="CharacterEllipsis" />
+            </StackPanel>
+          </Border>
+
+          <Panel IsVisible="{Binding HasResult}">
+            <Border Classes="banner success" IsVisible="{Binding IsHealthy}">
+              <Grid ColumnDefinitions="Auto,*">
+                <PathIcon Data="{StaticResource LmIconCheckCircle}" />
+                <StackPanel Grid.Column="1" Margin="12,0,0,0" Spacing="4">
+                  <TextBlock Classes="title" Text="{Binding ResultTitle}" />
+                  <TextBlock Classes="wrap" Text="{Binding ResultDetail}" />
+                </StackPanel>
+              </Grid>
+            </Border>
+            <Border Classes="banner warning" IsVisible="{Binding IsDegraded}">
+              <Grid ColumnDefinitions="Auto,*">
+                <PathIcon Data="{StaticResource LmIconAlert}" />
+                <StackPanel Grid.Column="1" Margin="12,0,0,0" Spacing="4">
+                  <TextBlock Classes="title" Text="{Binding ResultTitle}" />
+                  <TextBlock Classes="wrap" Text="{Binding ResultDetail}" />
+                </StackPanel>
+              </Grid>
+            </Border>
+            <Border Classes="banner danger" IsVisible="{Binding IsFailed}">
+              <Grid ColumnDefinitions="Auto,*">
+                <PathIcon Data="{StaticResource LmIconCloseCircle}" />
+                <StackPanel Grid.Column="1" Margin="12,0,0,0" Spacing="4">
+                  <TextBlock Classes="title" Text="{Binding ResultTitle}" />
+                  <TextBlock Classes="wrap" Text="{Binding ResultDetail}" />
+                </StackPanel>
+              </Grid>
+            </Border>
+          </Panel>
+
+          <Border Classes="card">
+            <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto" >
+              <Grid.Styles>
+                <Style Selector="TextBlock">
+                  <Setter Property="Margin" Value="0,4" />
+                </Style>
+              </Grid.Styles>
+              <TextBlock Classes="key" Text="Name" Margin="0,4,24,4" />
+              <TextBlock Grid.Column="1" Text="{Binding Name}" />
+              <TextBlock Grid.Row="1" Classes="key" Text="Provider" Margin="0,4,24,4" />
+              <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding ProviderName}" />
+              <TextBlock Grid.Row="2" Classes="key" Text="Request" Margin="0,4,24,4" />
+              <TextBlock Grid.Row="2" Grid.Column="1" Classes="mono" Text="{Binding EndpointPreview}"
+                         TextTrimming="CharacterEllipsis" />
+              <TextBlock Grid.Row="3" Classes="key" Text="Secret" Margin="0,4,24,4" />
+              <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding SecretSummary}" />
+            </Grid>
+          </Border>
+
+          <Button HorizontalAlignment="Left" Command="{Binding TestAgainCommand}" IsVisible="{Binding HasResult}">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <PathIcon Data="{StaticResource LmIconRefresh}" />
+              <TextBlock Text="Test again" />
+            </StackPanel>
+          </Button>
+
+          <TextBlock Classes="danger wrap" Text="{Binding SaveError}"
+                     IsVisible="{Binding SaveError, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+        </StackPanel>
+      </Panel>
+    </ScrollViewer>
+
+    <!-- Footer actions -->
+    <Border Grid.Row="2" Classes="footer" BorderBrush="{DynamicResource LmBorderBrush}" BorderThickness="0,1,0,0"
+            Background="{DynamicResource LmBgBrush}">
+      <Grid ColumnDefinitions="Auto,*,Auto" MaxWidth="720">
+        <Button Classes="ghost" Content="{Binding BackText}" Command="{Binding BackCommand}" />
+        <Button Grid.Column="2" Classes="primary" Command="{Binding PrimaryCommand}" IsDefault="True">
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <TextBlock Text="{Binding PrimaryText}" />
+            <PathIcon Data="{StaticResource LmIconChevronRight}" IsVisible="{Binding !IsTestStep}" />
+          </StackPanel>
+        </Button>
+      </Grid>
+    </Border>
+  </Grid>
+</v:LumioPage>

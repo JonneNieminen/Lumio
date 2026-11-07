@@ -1,0 +1,177 @@
+<!-- Dashboard: health summary and integration cards. One primary action: Add connection. -->
+<v:LumioPage xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:v="using:Lumio.Views"
+             xmlns:vm="using:Lumio.ViewModels"
+             xmlns:c="using:Lumio.Theme.Controls"
+             xmlns:conv="using:Lumio.Converters"
+             x:Class="Lumio.Views.ConnectionsPage"
+             x:DataType="vm:ConnectionsViewModel"
+             Header="{Binding Title}">
+  <ScrollViewer>
+    <Panel Container.Name="page" Container.Sizing="Width">
+      <Panel.Styles>
+        <!-- Defaults live in styles (not local values) so the container queries below can override them. -->
+        <Style Selector="UniformGrid.cards">
+          <Setter Property="Columns" Value="3" />
+        </Style>
+        <Style Selector="UniformGrid.stats">
+          <Setter Property="Columns" Value="4" />
+        </Style>
+        <Style Selector="StackPanel.content">
+          <Setter Property="Margin" Value="32,8,32,32" />
+        </Style>
+        <ContainerQuery Name="page" Query="max-width:1000">
+          <Style Selector="UniformGrid.cards">
+            <Setter Property="Columns" Value="2" />
+          </Style>
+        </ContainerQuery>
+        <ContainerQuery Name="page" Query="max-width:640">
+          <Style Selector="UniformGrid.cards">
+            <Setter Property="Columns" Value="1" />
+          </Style>
+          <Style Selector="UniformGrid.stats">
+            <Setter Property="Columns" Value="2" />
+          </Style>
+          <Style Selector="StackPanel.content">
+            <Setter Property="Margin" Value="16,8,16,24" />
+          </Style>
+          <!-- Phones: drop the subtitle, actions take the full row -->
+          <Style Selector="TextBlock.subtitle">
+            <Setter Property="IsVisible" Value="False" />
+          </Style>
+          <Style Selector="StackPanel.header-actions">
+            <Setter Property="Grid.Column" Value="0" />
+            <Setter Property="Grid.ColumnSpan" Value="2" />
+            <Setter Property="HorizontalAlignment" Value="Left" />
+          </Style>
+        </ContainerQuery>
+      </Panel.Styles>
+
+      <StackPanel Classes="content" Spacing="24" MaxWidth="1120">
+
+        <!-- Header row -->
+        <Grid ColumnDefinitions="*,Auto" IsVisible="{Binding HasConnections}">
+          <TextBlock Classes="subtitle secondary wrap" Text="{Binding Subtitle}" VerticalAlignment="Center" Margin="0,0,16,0" />
+          <StackPanel Classes="header-actions" Grid.Column="1" Orientation="Horizontal" Spacing="8">
+            <Button Command="{Binding TestAllCommand}" ToolTip.Tip="Test every connection now">
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <PathIcon Data="{StaticResource LmIconRefresh}" />
+                <TextBlock Text="Test all" />
+              </StackPanel>
+            </Button>
+            <Button Classes="primary" Command="{Binding AddConnectionCommand}">
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <PathIcon Data="{StaticResource LmIconPlus}" />
+                <TextBlock Text="Add connection" />
+              </StackPanel>
+            </Button>
+          </StackPanel>
+        </Grid>
+
+        <!-- Health summary -->
+        <UniformGrid Classes="stats" IsVisible="{Binding HasConnections}" Margin="0,0,-12,-12">
+          <Border Classes="card" Margin="0,0,12,12">
+            <StackPanel Spacing="6">
+              <StackPanel Orientation="Horizontal" Spacing="6">
+                <PathIcon Data="{StaticResource LmIconCheckCircle}" Width="14" Height="14"
+                          Foreground="{DynamicResource LmSuccessBrush}" />
+                <TextBlock Classes="overline" Text="CONNECTED" />
+              </StackPanel>
+              <TextBlock Classes="display" Text="{Binding ConnectedCount}" />
+            </StackPanel>
+          </Border>
+          <Border Classes="card" Margin="0,0,12,12">
+            <StackPanel Spacing="6">
+              <StackPanel Orientation="Horizontal" Spacing="6">
+                <PathIcon Data="{StaticResource LmIconAlert}" Width="14" Height="14"
+                          Foreground="{DynamicResource LmWarningBrush}" />
+                <TextBlock Classes="overline" Text="NEEDS ATTENTION" />
+              </StackPanel>
+              <TextBlock Classes="display" Text="{Binding AttentionCount}" />
+            </StackPanel>
+          </Border>
+          <Border Classes="card" Margin="0,0,12,12">
+            <StackPanel Spacing="6">
+              <StackPanel Orientation="Horizontal" Spacing="6">
+                <PathIcon Data="{StaticResource LmIconCloseCircle}" Width="14" Height="14"
+                          Foreground="{DynamicResource LmDangerBrush}" />
+                <TextBlock Classes="overline" Text="FAILED" />
+              </StackPanel>
+              <TextBlock Classes="display" Text="{Binding FailedCount}" />
+            </StackPanel>
+          </Border>
+          <Border Classes="card" Margin="0,0,12,12">
+            <StackPanel Spacing="6">
+              <StackPanel Orientation="Horizontal" Spacing="6">
+                <PathIcon Data="{StaticResource LmIconCircle}" Width="14" Height="14"
+                          Foreground="{DynamicResource LmTextMutedBrush}" />
+                <TextBlock Classes="overline" Text="NOT TESTED" />
+              </StackPanel>
+              <TextBlock Classes="display" Text="{Binding UntestedCount}" />
+            </StackPanel>
+          </Border>
+        </UniformGrid>
+
+        <!-- Integration cards -->
+        <ItemsControl ItemsSource="{Binding Cards}" IsVisible="{Binding HasConnections}" Margin="0,0,-12,0">
+          <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+              <UniformGrid Classes="cards" />
+            </ItemsPanelTemplate>
+          </ItemsControl.ItemsPanel>
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="vm:ConnectionCardViewModel">
+              <Button Classes="card" Margin="0,0,12,12"
+                      Command="{Binding $parent[ItemsControl].((vm:ConnectionsViewModel)DataContext).OpenCommand}"
+                      CommandParameter="{Binding}"
+                      AutomationProperties.Name="{Binding Name}">
+                <Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="Auto,*,Auto">
+                  <Border Classes="monogram">
+                    <TextBlock Text="{Binding Monogram}" />
+                  </Border>
+                  <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center" Spacing="2">
+                    <TextBlock Classes="label" Text="{Binding Name}" TextTrimming="CharacterEllipsis" />
+                    <TextBlock Classes="caption" Text="{Binding ProviderName}" />
+                  </StackPanel>
+                  <PathIcon Grid.Column="2" Data="{StaticResource LmIconChevronRight}" Width="18" Height="18"
+                            Foreground="{DynamicResource LmTextMutedBrush}" VerticalAlignment="Center" />
+
+                  <TextBlock Grid.Row="1" Grid.ColumnSpan="3" Classes="mono muted" Margin="0,16,0,0"
+                             Text="{Binding Endpoint}" TextTrimming="CharacterEllipsis" FontSize="12" />
+
+                  <Grid Grid.Row="2" Grid.ColumnSpan="3" ColumnDefinitions="Auto,*,Auto" Margin="0,16,0,0">
+                    <c:StatusBadge Text="{Binding StatusText}"
+                                   Kind="{Binding Status, Converter={x:Static conv:StatusToBadgeKindConverter.Instance}}" />
+                    <ProgressBar Grid.Column="1" IsIndeterminate="True" IsVisible="{Binding IsTesting}"
+                                 MinWidth="40" Margin="12,0" VerticalAlignment="Center" />
+                    <TextBlock Grid.Column="2" Classes="caption" Text="{Binding LastActivityText}"
+                               VerticalAlignment="Center" />
+                  </Grid>
+                </Grid>
+              </Button>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+        <!-- Empty state: an invitation, not an apology -->
+        <Border Classes="card" IsVisible="{Binding IsEmpty}" Padding="40,48" MaxWidth="560"
+                HorizontalAlignment="Center" Margin="0,32,0,0">
+          <StackPanel Spacing="12" HorizontalAlignment="Center">
+            <c:LumioMark ShowTile="True" Width="64" Height="64" HorizontalAlignment="Center" Margin="0,0,0,8" />
+            <TextBlock Classes="h2" Text="Your connections live here" HorizontalAlignment="Center" />
+            <TextBlock Classes="secondary wrap" TextAlignment="Center" MaxWidth="380"
+                       Text="Connect an API and Lumio keeps an eye on it: whether it answers, how fast, and what to do when it doesn't." />
+            <Button Classes="primary" HorizontalAlignment="Center" Margin="0,12,0,0"
+                    Command="{Binding AddConnectionCommand}">
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <PathIcon Data="{StaticResource LmIconPlus}" />
+                <TextBlock Text="Add a connection" />
+              </StackPanel>
+            </Button>
+          </StackPanel>
+        </Border>
+      </StackPanel>
+    </Panel>
+  </ScrollViewer>
+</v:LumioPage>
