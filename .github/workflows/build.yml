@@ -100,7 +100,11 @@ jobs:
 
       - name: Render icon preview
         if: matrix.mac
-        run: swift build/macos/render-icon.swift app/Lumio.app icon-preview-${{ matrix.rid }}.png
+        # Render from the packed zip: that is the bundle users get (vpk consumes app/Lumio.app).
+        run: |
+          preview="$(mktemp -d)"
+          ditto -x -k releases/Lumio.Desktop-${{ matrix.rid }}-Portable.zip "$preview"
+          swift build/macos/render-icon.swift "$preview/Lumio.app" icon-preview-${{ matrix.rid }}.png
 
       - name: Upload icon preview
         if: matrix.mac

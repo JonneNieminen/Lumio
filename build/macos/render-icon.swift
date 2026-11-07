@@ -3,6 +3,9 @@ import AppKit
 // CI uploads the result so icon changes can be checked without a Mac.
 // Usage: swift build/macos/render-icon.swift <App.app> <out.png>
 let args = CommandLine.arguments
+guard FileManager.default.fileExists(atPath: args[1]) else {
+    FileHandle.standardError.write("No app at \(args[1])\n".data(using: .utf8)!); exit(1)
+}
 let icon = NSWorkspace.shared.icon(forFile: args[1])
 let size = NSSize(width: 256, height: 256)
 icon.size = size
