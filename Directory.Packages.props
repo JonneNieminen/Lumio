@@ -16,7 +16,7 @@
     <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.2" />
     <!-- Keep in sync with the vpk tool in .config/dotnet-tools.json -->
     <PackageVersion Include="Velopack" Version="1.2.161" />
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.14" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="11.0.0" />
     <!-- AndroidX Core 1.19 absorbed core-ktx. Pin both to one version, or D8 sees duplicate classes. -->
     <PackageVersion Include="Xamarin.AndroidX.Core" Version="1.19.1" />
     <PackageVersion Include="Xamarin.AndroidX.Core.Core.Ktx" Version="1.19.1" />
